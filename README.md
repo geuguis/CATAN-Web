@@ -2,7 +2,7 @@
 
 <img src="https://capsule-render.vercel.app/api?type=venom&height=210&color=0:06131f,50:0b2239,100:1e293b&text=CATAN%20WEB&fontColor=fde047&fontSize=64&fontAlignY=42&desc=Arquitectura%20Axial%20%C2%B7%20Motor%20de%20Reglas%20Puras%20%C2%B7%20Multijugador%20Hot-Seat&descColor=e2e8f0&descSize=16&descAlignY=68&stroke=f59e0b&strokeWidth=1" width="100%" alt="Catan Web Header" />
 
-![Imagen Gameplay](img/Gameplay.png)
+![Imagen Gameplay](img/imgGameplay.png)
 
 <br />
 
