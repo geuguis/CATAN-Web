@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catán Local — 3 a 4 Jugadores</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <div id="inicio" class="pantalla-inicio">
+    <div class="tarjeta-inicio">
+      <div class="emblema">☀</div>
+      <h1>CATÁN</h1>
+      <p class="lema">Edición Local · Multijugador en el mismo dispositivo</p>
+
+      <div class="seccion-inicio">
+        <div class="cabecera-jugadores-inicio">
+          <h3>Jugadores en la Mesa (<span id="contadorJugadores">3</span>/4)</h3>
+          <button id="botonJugadorExtra" class="boton-pequeno" onclick="cambiarCantidad()">➕ Añadir 4.º Jugador</button>
+        </div>
+        <div class="entradas-jugadores">
+          <div class="campo-jugador">
+            <span class="punto-color" style="background:#ef4444"></span>
+            <input id="nombre0" type="text" value="Jugador 1" maxlength="16">
+          </div>
+          <div class="campo-jugador">
+            <span class="punto-color" style="background:#3b82f6"></span>
+            <input id="nombre1" type="text" value="Jugador 2" maxlength="16">
+          </div>
+          <div class="campo-jugador">
+            <span class="punto-color" style="background:#f8fafc"></span>
+            <input id="nombre2" type="text" value="Jugador 3" maxlength="16">
+          </div>
+          <div id="bloqueJugador3" class="campo-jugador oculto">
+            <span class="punto-color" style="background:#f97316"></span>
+            <input id="nombre3" type="text" value="Jugador 4" maxlength="16">
+          </div>
+        </div>
+      </div>
+
+      <div class="seccion-inicio">
+        <h3>Modo de Partida</h3>
+        <div class="modos-inicio">
+          <button id="modo-azar" class="opcion-modo activo" onclick="configurar('azar')">
+            <strong>Mapa Variable</strong>
+            <small>Isla aleatoria equilibrada y colocación inicial por turnos</small>
+          </button>
+          <button id="modo-principiante" class="opcion-modo" onclick="configurar('principiante')">
+            <strong>Mapa Principiante</strong>
+            <small>Terrenos fijos del manual y colocación inicial por turnos</small>
+          </button>
+          <button id="modo-rapido" class="opcion-modo" onclick="configurar('rapido')">
+            <strong>Inicio Rápido</strong>
+            <small>Poblados y recursos iniciales ya colocados para jugar al instante</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="reglas-rapidas">
+        <span>🎴 Cartas siempre tapadas (pasa el ratón o toca en tu turno)</span>
+        <span>⚓ Comercio naval exclusivo con poblado o ciudad en puerto</span>
+        <span>🛡️ Ordena y tapa tus cartas antes de que te roben</span>
+      </div>
+
+      <div class="acciones-inicio">
+        <button id="botonContinuar" class="boton-secundario oculto" onclick="alternar('inicio')">↩ Volver a la Partida</button>
+        <button id="botonGuardada" class="boton-secundario oculto" onclick="cargar('restaurar')">📂 Continuar Partida Guardada</button>
+        <button class="boton-empezar" onclick="iniciar()">Empezar Nueva Partida</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="hud-superior">
+    <button class="boton-icono" onclick="abrir('menu')" title="Menú de Pausa">☰ Menú</button>
+    <div id="marcador" class="marcador"></div>
+    <div class="botones-hud">
+      <button class="boton-icono" onclick="alternar('reserva')">📦 Banca y Costes</button>
+      <button class="boton-icono" onclick="alternar('guia')">❓ Guía</button>
+    </div>
+  </header>
+
+  <div id="guiaContextual" class="guia-contextual">
+    <div id="pasoActual" class="paso-actual"></div>
+    <div id="ayudaActual" class="ayuda-actual"></div>
+  </div>
+
+  <aside id="panelReserva" class="panel-flotante oculto">
+    <div class="cabecera-flotante">
+      <h3>Banca y Costes de Construcción</h3>
+      <button class="cerrar-flotante" onclick="alternar('reserva')">✕</button>
+    </div>
+    <div id="banca" class="banca"></div>
+    <div id="insignias" class="insignias"></div>
+    <div class="tabla-costes">
+      <div><strong>🛣️ Carretera (0 PV):</strong> 1 Arcilla + 1 Madera</div>
+      <div><strong>🏠 Poblado (1 PV):</strong> 1 Arcilla + 1 Madera + 1 Lana + 1 Trigo</div>
+      <div><strong>🏛️ Ciudad (2 PV):</strong> 3 Minerales + 2 Trigos (reemplaza poblado)</div>
+      <div><strong>📜 Desarrollo:</strong> 1 Mineral + 1 Lana + 1 Trigo</div>
+    </div>
+  </aside>
+
+  <aside id="panelGuia" class="panel-flotante oculto">
+    <div class="cabecera-flotante">
+      <h3>Guía Rápida del Turno</h3>
+      <button class="cerrar-flotante" onclick="alternar('guia')">✕</button>
+    </div>
+    <div class="tabla-costes">
+      <div><strong>1. Lanzar dados:</strong> Tras terminar la animación de dados, las recompensas aparecen en los hexágonos y luego vuelan a cada perfil.</div>
+      <div><strong>2. El Ladrón (7):</strong> El hexágono con líneas rojas en movimiento está bloqueado y no produce recursos.</div>
+      <div><strong>3. Comercio Naval:</strong> Requiere tener al menos un poblado o ciudad construido en un puerto (3:1 o 2:1).</div>
+      <div><strong>4. Libro Oficial:</strong> Puedes abrir el PDF oficial desde el botón ☰ Menú en cualquier momento.</div>
+    </div>
+  </aside>
+
+  <main class="escenario">
+    <svg id="lienzo" viewBox="-330 -295 660 590"></svg>
+  </main>
+
+  <footer class="hud-inferior">
+    <div class="atril-cartas">
+      <div class="etiqueta-atril">
+        <strong id="tituloMano">Mano</strong>
+        <span>Pasa el ratón o toca tus cartas para verlas</span>
+      </div>
+      <div class="bandeja-cartas">
+        <div id="manoRecursos" class="cartas"></div>
+        <div class="separador-cartas"></div>
+        <div id="manoDesarrollo" class="cartas"></div>
+      </div>
+    </div>
+
+    <div id="accionesContextuales" class="acciones-contextuales"></div>
+  </footer>
+
+  <div id="ventana" class="ventana oculto">
+    <div id="contenidoVentana" class="caja-ventana"></div>
+  </div>
+
+  <div id="capaAnimacion" class="capa-animacion"></div>
+
+  <script src="tablero.js"></script>
+  <script src="reglas.js"></script>
+  <script src="animaciones.js"></script>
+  <script src="juego.js"></script>
+</body>
+</html>
