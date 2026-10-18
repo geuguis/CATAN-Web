@@ -2,9 +2,7 @@
 
 <img src="https://capsule-render.vercel.app/api?type=venom&height=210&color=0:06131f,50:0b2239,100:1e293b&text=CATAN%20WEB&fontColor=fde047&fontSize=64&fontAlignY=42&desc=Arquitectura%20Axial%20%C2%B7%20Motor%20de%20Reglas%20Puras%20%C2%B7%20Multijugador%20Hot-Seat&descColor=e2e8f0&descSize=16&descAlignY=68&stroke=f59e0b&strokeWidth=1" width="100%" alt="Catan Web Header" />
 
-<a href="https://geuguis.github.io/CATAN-Web/">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=15&duration=3200&pause=1200&color=38BDF8&center=true&vCenter=true&width=720&height=36&lines=19+Hexagonos+Axiales+%7C+54+Intersecciones+%7C+72+Aristas+%7C+9+Puertos+Maritimos;DFS+con+Backtracking+para+Gran+Ruta+Comercial+%7C+Escasez+Oficial+de+Banca;Privacidad+de+Cartas+Pass-and-Play+%7C+0+Dependencias+Externas+%7C+Tests+Nativos" alt="Especificaciones" />
-</a>
+![Imagen Gameplay](img/Gameplay.png)
 
 <br />
 
