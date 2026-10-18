@@ -3,43 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Catán Web — Edición local multijugador (3 a 4 jugadores Hot-Seat) en JavaScript nativo y SVG con cartas ocultas, reglas oficiales y guardado automático.">
   <title>Catán Local — 3 a 4 Jugadores</title>
   <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
   <div id="inicio" class="pantalla-inicio">
     <div class="tarjeta-inicio">
-      <div class="emblema">☀</div>
+      <div class="emblema" aria-hidden="true">☀</div>
       <h1>CATÁN</h1>
       <p class="lema">Edición Local · Multijugador en el mismo dispositivo</p>
 
       <div class="seccion-inicio">
         <div class="cabecera-jugadores-inicio">
-          <h3>Jugadores en la Mesa (<span id="contadorJugadores">3</span>/4)</h3>
+          <h2>Jugadores en la Mesa (<span id="contadorJugadores">3</span>/4)</h2>
           <button id="botonJugadorExtra" class="boton-pequeno" onclick="cambiarCantidad()">➕ Añadir 4.º Jugador</button>
         </div>
         <div class="entradas-jugadores">
           <div class="campo-jugador">
-            <span class="punto-color" style="background:#ef4444"></span>
-            <input id="nombre0" type="text" value="Jugador 1" maxlength="16">
+            <span class="punto-color" style="background:#ef4444" aria-hidden="true"></span>
+            <label class="etiqueta-oculta" for="nombre0">Nombre del Jugador 1</label>
+            <input id="nombre0" type="text" value="Jugador 1" maxlength="16" aria-label="Nombre del Jugador 1">
           </div>
           <div class="campo-jugador">
-            <span class="punto-color" style="background:#3b82f6"></span>
-            <input id="nombre1" type="text" value="Jugador 2" maxlength="16">
+            <span class="punto-color" style="background:#3b82f6" aria-hidden="true"></span>
+            <label class="etiqueta-oculta" for="nombre1">Nombre del Jugador 2</label>
+            <input id="nombre1" type="text" value="Jugador 2" maxlength="16" aria-label="Nombre del Jugador 2">
           </div>
           <div class="campo-jugador">
-            <span class="punto-color" style="background:#f8fafc"></span>
-            <input id="nombre2" type="text" value="Jugador 3" maxlength="16">
+            <span class="punto-color" style="background:#f8fafc" aria-hidden="true"></span>
+            <label class="etiqueta-oculta" for="nombre2">Nombre del Jugador 3</label>
+            <input id="nombre2" type="text" value="Jugador 3" maxlength="16" aria-label="Nombre del Jugador 3">
           </div>
           <div id="bloqueJugador3" class="campo-jugador oculto">
-            <span class="punto-color" style="background:#f97316"></span>
-            <input id="nombre3" type="text" value="Jugador 4" maxlength="16">
+            <span class="punto-color" style="background:#f97316" aria-hidden="true"></span>
+            <label class="etiqueta-oculta" for="nombre3">Nombre del Jugador 4</label>
+            <input id="nombre3" type="text" value="Jugador 4" maxlength="16" aria-label="Nombre del Jugador 4">
           </div>
         </div>
       </div>
 
       <div class="seccion-inicio">
-        <h3>Modo de Partida</h3>
+        <h2>Modo de Partida</h2>
         <div class="modos-inicio">
           <button id="modo-azar" class="opcion-modo activo" onclick="configurar('azar')">
             <strong>Mapa Variable</strong>
@@ -84,10 +89,10 @@
     <div id="ayudaActual" class="ayuda-actual"></div>
   </div>
 
-  <aside id="panelReserva" class="panel-flotante oculto">
+  <aside id="panelReserva" class="panel-flotante oculto" aria-label="Banca y Costes">
     <div class="cabecera-flotante">
-      <h3>Banca y Costes de Construcción</h3>
-      <button class="cerrar-flotante" onclick="alternar('reserva')">✕</button>
+      <h2>Banca y Costes de Construcción</h2>
+      <button class="cerrar-flotante" onclick="alternar('reserva')" aria-label="Cerrar panel de banca">✕</button>
     </div>
     <div id="banca" class="banca"></div>
     <div id="insignias" class="insignias"></div>
@@ -99,10 +104,10 @@
     </div>
   </aside>
 
-  <aside id="panelGuia" class="panel-flotante oculto">
+  <aside id="panelGuia" class="panel-flotante oculto" aria-label="Guía Rápida">
     <div class="cabecera-flotante">
-      <h3>Guía Rápida del Turno</h3>
-      <button class="cerrar-flotante" onclick="alternar('guia')">✕</button>
+      <h2>Guía Rápida del Turno</h2>
+      <button class="cerrar-flotante" onclick="alternar('guia')" aria-label="Cerrar guía rápida">✕</button>
     </div>
     <div class="tabla-costes">
       <div><strong>1. Lanzar dados:</strong> Tras terminar la animación de dados, las recompensas aparecen en los hexágonos y luego vuelan a cada perfil.</div>
@@ -113,7 +118,7 @@
   </aside>
 
   <main class="escenario">
-    <svg id="lienzo" viewBox="-330 -295 660 590"></svg>
+    <svg id="lienzo" viewBox="-330 -295 660 590" role="img" aria-label="Tablero hexagonal de Catán"></svg>
   </main>
 
   <footer class="hud-inferior">
@@ -132,15 +137,15 @@
     <div id="accionesContextuales" class="acciones-contextuales"></div>
   </footer>
 
-  <div id="ventana" class="ventana oculto">
+  <div id="ventana" class="ventana oculto" role="dialog" aria-modal="true" aria-label="Ventana de acción">
     <div id="contenidoVentana" class="caja-ventana"></div>
   </div>
 
-  <div id="capaAnimacion" class="capa-animacion"></div>
+  <div id="capaAnimacion" class="capa-animacion" aria-hidden="true"></div>
 
-  <script src="tablero.js"></script>
-  <script src="reglas.js"></script>
-  <script src="animaciones.js"></script>
-  <script src="juego.js"></script>
+  <script src="tablero.js" defer></script>
+  <script src="reglas.js" defer></script>
+  <script src="animaciones.js" defer></script>
+  <script src="juego.js" defer></script>
 </body>
 </html>

@@ -89,6 +89,19 @@ body {
   margin-top: -0.5rem;
 }
 
+.etiqueta-oculta {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.seccion-inicio h2,
 .seccion-inicio h3 {
   font-size: 0.82rem;
   text-transform: uppercase;
@@ -398,6 +411,10 @@ button.peligro {
   align-items: center;
   color: var(--oro);
   font-size: 0.88rem;
+}
+
+.cabecera-flotante h2 {
+  font-size: 0.95rem;
 }
 
 .cerrar-flotante {
