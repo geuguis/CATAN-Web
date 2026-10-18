@@ -1,0 +1,21 @@
+{
+  "name": "catan-web",
+  "version": "1.0.0",
+  "description": "Implementación de CATÁN (3 a 4 jugadores Hot-Seat) en Vanilla JS, HTML5 y SVG con motor de reglas puro y tests unitarios.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geuguis/CATAN-Web.git"
+  },
+  "scripts": {
+    "test": "node --test tests/reglas.test.js"
+  },
+  "keywords": [
+    "catan",
+    "javascript",
+    "vanilla-js",
+    "svg",
+    "board-game",
+    "hot-seat"
+  ],
+  "license": "MIT"
+}
