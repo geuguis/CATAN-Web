@@ -24,9 +24,10 @@ function animar(tipo, datos = {}) {
 
     const caja = document.createElement('div');
     caja.className = 'dados-emergentes';
+    const iconoDado = typeof iconoSVG === 'function' ? iconoSVG('dado') : '';
     caja.innerHTML = `
-      <div class="dado-grande agitando">🎲</div>
-      <div class="dado-grande rojo agitando">🎲</div>
+      <div class="dado-grande agitando">${ iconoDado }</div>
+      <div class="dado-grande rojo agitando">${ iconoDado }</div>
     `;
     capa.appendChild(caja);
     const [el1, el2] = caja.querySelectorAll('.dado-grande');
@@ -68,10 +69,11 @@ function animar(tipo, datos = {}) {
 
     const carta = document.createElement('div');
     carta.className = 'carta-voladora';
-    carta.style.background = COLORES[rec] || '#334155';
+    carta.style.background = COLORES[rec] || '#475569';
     carta.style.opacity = '0';
+    const iconoFallback = typeof iconoSVG === 'function' ? iconoSVG('carta') : '';
     carta.innerHTML = `
-      <span class="icono-vuelo">${ ICONOS[rec] || '🎴' }</span>
+      <span class="icono-vuelo">${ ICONOS[rec] || iconoFallback }</span>
       <span>${ NOMBRES[rec] || '' }</span>
     `;
     capa.appendChild(carta);
@@ -165,7 +167,7 @@ function animar(tipo, datos = {}) {
 
     const figura = document.createElement('div');
     figura.className = 'ladron-epico';
-    figura.textContent = '🦹';
+    figura.innerHTML = typeof iconoSVG === 'function' ? iconoSVG('ladron') : '';
     capa.appendChild(figura);
 
     const mx = (inicio.x + fin.x) / 2;

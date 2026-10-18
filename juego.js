@@ -41,9 +41,44 @@ function guardar() {
       }
     };
     localStorage.setItem(CLAVE_GUARDADO, JSON.stringify(instantanea));
-    const botonGuardada = typeof document !== 'undefined' ? document.getElementById('botonGuardada') : null;
-    if (botonGuardada) botonGuardada.classList.remove('oculto');
+    actualizarBotonesContinuar();
   } catch (_) {}
+}
+
+let animarAperturaIsla = true;
+let partidaEnCurso = false;
+
+function actualizarBotonesContinuar() {
+  if (typeof document === 'undefined') return;
+  const continuarEl = document.getElementById('botonContinuar');
+  const guardadaEl = document.getElementById('botonGuardada');
+  if (continuarEl) continuarEl.classList.toggle('oculto', !partidaEnCurso);
+  if (guardadaEl) {
+    const hayGuardada = !partidaEnCurso && cargar('verificar');
+    guardadaEl.classList.toggle('oculto', !hayGuardada);
+  }
+}
+
+function inicializarMenu() {
+  if (typeof document === 'undefined' || typeof miniaturaSVG !== 'function') return;
+  ['azar', 'principiante', 'rapido'].forEach(m => {
+    const cont = document.getElementById(`mini-${ m }`);
+    if (cont) cont.innerHTML = miniaturaSVG(m);
+  });
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById(`piezaMenu${ i }`);
+    if (el && typeof piezaSVG === 'function') {
+      el.innerHTML = piezaSVG('poblado', JUGADORES[i].color);
+    }
+  }
+  const icCar = document.getElementById('iconoCosteCarretera');
+  const icPob = document.getElementById('iconoCostePoblado');
+  const icCiu = document.getElementById('iconoCosteCiudad');
+  const icDes = document.getElementById('iconoCosteDesarrollo');
+  if (icCar) icCar.innerHTML = piezaSVG('carretera', '#8b5a2b');
+  if (icPob) icPob.innerHTML = piezaSVG('poblado', '#8b5a2b');
+  if (icCiu) icCiu.innerHTML = piezaSVG('ciudad', '#8b5a2b');
+  if (icDes) icDes.innerHTML = iconoSVG('desarrollo');
 }
 
 function cargar(accion = 'verificar') {
@@ -66,11 +101,13 @@ function cargar(accion = 'verificar') {
     estado.enfriamiento = false;
     estado.repartiendo = false;
     estado.girandoDados = false;
+    partidaEnCurso = true;
+    animarAperturaIsla = true;
 
     const inicioEl = document.getElementById('inicio');
-    const continuarEl = document.getElementById('botonContinuar');
     if (inicioEl) inicioEl.classList.add('oculto');
-    if (continuarEl) continuarEl.classList.remove('oculto');
+    if (typeof document !== 'undefined' && document.body) document.body.classList.remove('en-menu');
+    actualizarBotonesContinuar();
     cerrar();
     dibujar('todo');
     if (estado.fase === 'descarte') abrir('descarte');
@@ -102,8 +139,8 @@ function cambiarCantidad() {
   if (bloque3) bloque3.classList.toggle('oculto', cantidadJugadores === 3);
   if (botonExtra) {
     botonExtra.textContent = cantidadJugadores === 3
-      ? '➕ Añadir 4.º Jugador'
-      : '➖ Quitar 4.º Jugador';
+      ? '+ 4.º jugador'
+      : '− Quitar 4.º';
   }
 }
 
@@ -113,6 +150,13 @@ function configurar(modo) {
     const el = document.getElementById(`modo-${ m }`);
     if (el) el.classList.toggle('activo', m === modo);
   });
+  if (modo === 'azar' && typeof document !== 'undefined' && typeof miniaturaSVG === 'function') {
+    const cont = document.getElementById('mini-azar');
+    if (cont) cont.innerHTML = miniaturaSVG('azar');
+  }
+  if (!partidaEnCurso) {
+    reiniciar(modo, true);
+  }
 }
 
 function iniciar() {
@@ -122,11 +166,12 @@ function iniciar() {
       JUGADORES[i].nombre = campo.value.trim().slice(0, 16);
     }
   }
+  partidaEnCurso = true;
   const inicioEl = document.getElementById('inicio');
-  const continuarEl = document.getElementById('botonContinuar');
   if (inicioEl) inicioEl.classList.add('oculto');
-  if (continuarEl) continuarEl.classList.remove('oculto');
-  reiniciar(modoElegido);
+  if (typeof document !== 'undefined' && document.body) document.body.classList.remove('en-menu');
+  actualizarBotonesContinuar();
+  reiniciar(modoElegido, false);
 }
 
 function alternar(panel) {
@@ -136,7 +181,12 @@ function alternar(panel) {
 
   if (panel === 'inicio' && inicioEl) {
     cerrar();
-    inicioEl.classList.toggle('oculto');
+    const mostrarMenu = inicioEl.classList.contains('oculto');
+    inicioEl.classList.toggle('oculto', !mostrarMenu);
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.toggle('en-menu', mostrarMenu);
+    }
+    actualizarBotonesContinuar();
   } else if (panel === 'reserva' && reservaEl) {
     if (guiaEl) guiaEl.classList.add('oculto');
     reservaEl.classList.toggle('oculto');
@@ -241,7 +291,7 @@ function desempatar() {
   }, 95);
 }
 
-function reiniciar(modo = 'azar') {
+function reiniciar(modo = 'azar', soloVistaPrevia = false) {
   idPartida++;
   if (temporizadorEnfriamiento) clearTimeout(temporizadorEnfriamiento);
   const capa = typeof document !== 'undefined' ? document.getElementById('capaAnimacion') : null;
@@ -291,7 +341,7 @@ function reiniciar(modo = 'azar') {
     invento: null,
     desempate: null,
     ganador: null,
-    mensaje: `Haz clic en un círculo blanco del mapa para colocar tu primer poblado.`,
+    mensaje: `Haz clic en un círculo del mapa para colocar tu primer poblado.`,
     jugadores: activos.map(j => ({
       ...j,
       recursos: [],
@@ -308,16 +358,46 @@ function reiniciar(modo = 'azar') {
 
   generar(modo, estado);
   if (modo === 'rapido') {
+    const prevPartidaEnCurso = partidaEnCurso;
+    if (soloVistaPrevia) partidaEnCurso = false;
     while (estado.fase === 'inicial') {
       const nValidos = validar('poblado', estado.turno, true);
-      construir('poblado', nValidos[Math.floor(Math.random() * nValidos.length)]);
-      const cValidos = validar('carretera', estado.turno, estado.origen);
-      construir('carretera', cValidos[0]);
+      const nid = nValidos[Math.floor(Math.random() * nValidos.length)];
+      const j = estado.jugadores[estado.turno];
+      const nodo = estado.nodos[nid];
+      nodo.dueno = estado.turno;
+      nodo.edificio = 'poblado';
+      j.piezas.poblado--;
+      if (estado.indice >= estado.jugadores.length) {
+        nodo.hexagonos.forEach(hid => {
+          const hex = estado.hexagonos[hid];
+          if (hex.terreno !== 'desierto' && estado.banca[hex.terreno] > 0) {
+            estado.banca[hex.terreno]--;
+            j.recursos.push(hex.terreno);
+          }
+        });
+      }
+      const cValidos = validar('carretera', estado.turno, nid);
+      estado.caminos[cValidos[0]].dueno = estado.turno;
+      j.piezas.carretera--;
+      evaluar('ruta');
+      estado.indice++;
+      if (estado.indice < estado.secuencia.length) {
+        estado.turno = estado.secuencia[estado.indice];
+      } else {
+        estado.turno = 0;
+        estado.fase = 'tirada';
+        estado.etapa = null;
+        estado.origen = null;
+        estado.mensaje = `Comienza la partida. Pulsa "Lanzar dados" para producir recursos.`;
+      }
     }
+    partidaEnCurso = prevPartidaEnCurso;
     estado.recienCreada = null;
   }
+  animarAperturaIsla = true;
   cerrar();
-  guardar();
+  if (!soloVistaPrevia) guardar();
   dibujar('todo');
 }
 
@@ -599,8 +679,8 @@ function lanzar() {
   estado.repartiendo = true;
   estado.recienCreada = null;
   estado.hexActivos = [];
-  estado.dados = ['🎲', '🎲'];
-  estado.mensaje = '🎲 Lanzando los dados...';
+  estado.dados = ['?', '?'];
+  estado.mensaje = 'Lanzando los dados...';
   enfriar(1000);
   dibujar('panel');
 
@@ -623,14 +703,14 @@ function lanzar() {
           estado.descartes = afectados;
           estado.marcadas = [];
           estado.fase = 'descarte';
-          estado.mensaje = `¡Salió un 7! Los jugadores con más de 7 cartas deben descartar la mitad.`;
+          estado.mensaje = `Salió un 7. Los jugadores con más de 7 cartas deben descartar la mitad.`;
           guardar();
           dibujar('todo');
           abrir('descarte');
         } else {
           estado.previa = 'principal';
           estado.fase = 'ladron';
-          estado.mensaje = `¡Salió un 7! Haz clic en cualquier otro hexágono para mover al ladrón.`;
+          estado.mensaje = `Salió un 7. Haz clic en cualquier otro hexágono para mover al ladrón.`;
           guardar();
           dibujar('todo');
         }
@@ -759,7 +839,7 @@ function robar(paso, valor) {
       estado.robo = null;
       estado.fase = estado.previa || 'principal';
       estado.previa = null;
-      estado.mensaje = `${ activo.nombre } robó 1 ${ ICONOS[robada] } ${ NOMBRES[robada] } a ${ victima.nombre }.`;
+      estado.mensaje = `${ activo.nombre } robó 1 ${ NOMBRES[robada] } a ${ victima.nombre }.`;
       cerrar();
       guardar();
       dibujar('todo');
@@ -808,7 +888,7 @@ function pasar() {
   estado.recienCreada = null;
   estado.hexActivos = [];
   estado.dados = ['-', '-'];
-  estado.mensaje = `Pulsa "Lanzar Dados" para iniciar la producción de recursos.`;
+  estado.mensaje = `Pulsa "Lanzar dados" para iniciar la producción de recursos.`;
   enfriar(1000);
   guardar();
   if (!ganar()) dibujar('todo');
@@ -819,27 +899,24 @@ function abrir(ventanaNombre) {
   const caja = document.getElementById('contenidoVentana');
   ventana.classList.remove('oculto');
   const activo = estado.jugadores[estado.turno];
+  const svgCartaReverso = typeof iconoSVG === 'function' ? iconoSVG('carta') : '';
 
   if (ventanaNombre === 'menu') {
     caja.innerHTML = `
-      <h2>☰ Menú de la Partida</h2>
-      <p>La partida está en pausa. Elige una opción:</p>
+      <h2>Menú de la partida</h2>
+      <p>La partida está en pausa:</p>
       <div class="lista-menu-pausa">
         <button class="primario" onclick="cerrar()">
-          <span>↩️ Volver Atrás (Continuar Jugando)</span>
-          <span>▶</span>
+          <span>Continuar partida</span>
         </button>
         <button onclick="window.open('catan_base_rules_2020.pdf', '_blank')">
-          <span>📖 Abrir PDF Oficial de Reglas</span>
-          <span>↗</span>
+          <span>Abrir reglamento oficial (PDF)</span>
         </button>
         <button class="peligro" onclick="terminar()">
-          <span>🏁 Terminar Partida Ahora (Gana quien tenga más PV)</span>
-          <span>🏆</span>
+          <span>Terminar partida ahora (gana quien tenga más PV)</span>
         </button>
         <button onclick="alternar('inicio')">
-          <span>⚙️ Configurar Nueva Mesa / Jugadores</span>
-          <span>👥</span>
+          <span>Volver al menú principal</span>
         </button>
       </div>
     `;
@@ -847,8 +924,8 @@ function abrir(ventanaNombre) {
     const d = estado.desempate;
     if (!d) { cerrar(); return; }
     caja.innerHTML = `
-      <h2>🎲 Duelo de Dados por Desempate</h2>
-      <p>Hay un empate en cabeza con <strong>${ d.maxPuntos } PV</strong>. ¡Lanzad los dados y el que saque la suma más alta gana la partida!</p>
+      <h2>Duelo de dados por desempate</h2>
+      <p>Hay un empate en cabeza con <strong>${ d.maxPuntos } PV</strong>. Lanzad los dados y quien saque la suma más alta gana la partida.</p>
       <div class="jugadores">
         ${ d.candidatos.map(jid => {
           const j = estado.jugadores[jid];
@@ -857,8 +934,8 @@ function abrir(ventanaNombre) {
           return `
             <div class="fila-jugador ${ esGanador ? 'ganador-duelo' : '' }">
               <div class="fila-cabecera">
-                <span><span class="punto-color" style="background:${ j.color }"></span> ${ escapar(j.nombre) } (${ puntuar(jid, true) } PV)</span>
-                <strong>${ t ? `Suma: ${ t[2] } ${ esGanador ? '🏆' : '' }` : 'Listo para tirar' }</strong>
+                <span class="nombre-con-pieza">${ piezaSVG('poblado', j.color, 'pieza-inline') } ${ escapar(j.nombre) } (${ puntuar(jid, true) } PV)</span>
+                <strong>${ t ? `Suma: ${ t[2] }` : 'Listo para tirar' }</strong>
               </div>
               <div class="dados-duelo">
                 <div class="dado-grande ${ d.rodando ? 'agitando' : '' }">${ t ? t[0] : '?' }</div>
@@ -870,8 +947,8 @@ function abrir(ventanaNombre) {
       </div>
       <div class="acciones-ventana">
         ${ d.ganador === null
-          ? `<button class="primario" ${ d.rodando ? 'disabled' : '' } onclick="desempatar()">${ d.rodando ? '🎲 Rodando dados...' : '🎲 Lanzar Dados de Desempate' }</button>`
-          : `<button class="exito" onclick="abrir('victoria')">🏆 Ver Clasificación Final</button>`
+          ? `<button class="primario" ${ d.rodando ? 'disabled' : '' } onclick="desempatar()">${ d.rodando ? 'Rodando dados...' : 'Lanzar dados de desempate' }</button>`
+          : `<button class="exito" onclick="abrir('victoria')">Ver clasificación final</button>`
         }
       </div>
     `;
@@ -880,12 +957,12 @@ function abrir(ventanaNombre) {
     const j = estado.jugadores[actual.id];
     const faltan = actual.cantidad - estado.marcadas.length;
     caja.innerHTML = `
-      <h2>Descarte por Ladrón (7) — ${ escapar(j.nombre) }</h2>
+      <h2>Descarte por ladrón (7) — ${ escapar(j.nombre) }</h2>
       <p>Tienes ${ j.recursos.length } cartas. Selecciona <strong>${ actual.cantidad }</strong> para descartar (faltan ${ faltan }):</p>
       <div class="fila-orden">
         ${ j.recursos.map((rec, idx) => `
           <div class="carta revelable ${ estado.marcadas.includes(idx) ? 'seleccionada' : '' }" data-tipo="${ rec }" onclick="descartar('marcar', ${ idx })">
-            <div class="reverso">🎴</div>
+            <div class="reverso">${ svgCartaReverso }</div>
             <div class="frente">
               <span>${ ICONOS[rec] }</span>
               <span>${ NOMBRES[rec] }</span>
@@ -895,7 +972,7 @@ function abrir(ventanaNombre) {
       </div>
       <div class="acciones-ventana">
         <button class="primario" ${ faltan !== 0 ? 'disabled' : '' } onclick="descartar('confirmar')">
-          Confirmar Descarte
+          Confirmar descarte
         </button>
       </div>
     `;
@@ -907,7 +984,7 @@ function abrir(ventanaNombre) {
         <div class="controles">
           ${ estado.robo.victimas.map(vid => {
             const v = estado.jugadores[vid];
-            return `<button class="primario" onclick="robar('iniciar', ${ vid })">${ escapar(v.nombre) } (${ v.recursos.length } cartas)</button>`;
+            return `<button class="primario" onclick="robar('iniciar', ${ vid })">${ piezaSVG('poblado', v.color, 'pieza-inline') } ${ escapar(v.nombre) } (${ v.recursos.length } cartas)</button>`;
           }).join('') }
         </div>
       `;
@@ -917,13 +994,13 @@ function abrir(ventanaNombre) {
     const victima = estado.jugadores[estado.robo.victima];
     if (!estado.robo.tapadas) {
       caja.innerHTML = `
-        <h2>Turno de Defensa: ${ escapar(victima.nombre) }</h2>
-        <p><strong>${ escapar(activo.nombre) } no debe mirar.</strong> Pasa el ratón o toca tus cartas para verlas, ordénalas como prefieras y luego pulsa <em>Tapar Cartas</em>.</p>
+        <h2>Turno de defensa: ${ escapar(victima.nombre) }</h2>
+        <p><strong>${ escapar(activo.nombre) } no debe mirar.</strong> Pasa el ratón o toca tus cartas para verlas, ordénalas como prefieras y luego pulsa <em>Tapar cartas</em>.</p>
         <div class="fila-orden">
           ${ victima.recursos.map((rec, idx) => `
             <div class="contenedor-carta-robo">
               <div class="carta revelable" data-tipo="${ rec }" onclick="voltear(this, event)">
-                <div class="reverso">🎴</div>
+                <div class="reverso">${ svgCartaReverso }</div>
                 <div class="frente">
                   <span>${ ICONOS[rec] }</span>
                   <span>${ NOMBRES[rec] }</span>
@@ -937,21 +1014,21 @@ function abrir(ventanaNombre) {
           `).join('') }
         </div>
         <div class="acciones-ventana">
-          <button onclick="ordenar('mezclar')">Mezclar al Azar</button>
-          <button class="primario" onclick="ordenar('tapar')">Tapar Cartas para el Robo</button>
+          <button onclick="ordenar('mezclar')">Mezclar al azar</button>
+          <button class="primario" onclick="ordenar('tapar')">Tapar cartas para el robo</button>
         </div>
       `;
     } else {
       const rev = estado.robo.revelada;
       caja.innerHTML = `
-        <h2>Robar Carta — ${ escapar(activo.nombre) }</h2>
-        <p>${ rev !== null ? `¡Has robado <strong>${ ICONOS[victima.recursos[rev]] } ${ NOMBRES[victima.recursos[rev]] }</strong>! Enviando a tu perfil...` : `Las cartas de ${ escapar(victima.nombre) } están ordenadas y tapadas. Haz clic en una para robarla:` }</p>
+        <h2>Robar carta — ${ escapar(activo.nombre) }</h2>
+        <p>${ rev !== null ? `Has robado <strong>${ NOMBRES[victima.recursos[rev]] }</strong>.` : `Las cartas de ${ escapar(victima.nombre) } están ordenadas y tapadas. Haz clic en una para robarla:` }</p>
         <div class="fila-orden">
           ${ victima.recursos.map((rec, idx) => {
             const destapada = rev === idx;
             return `
               <div id="carta-robo-${ idx }" class="carta ${ destapada ? 'destapada' : '' }" data-tipo="${ rec }" onclick="robar('tomar', ${ idx })">
-                <div class="reverso">🎴</div>
+                <div class="reverso">${ svgCartaReverso }</div>
                 <div class="frente">
                   <span>${ ICONOS[rec] }</span>
                   <span>${ NOMBRES[rec] }</span>
@@ -968,7 +1045,7 @@ function abrir(ventanaNombre) {
     const conteo = contar(activo.recursos);
     if (puertos.length === 0) {
       caja.innerHTML = `
-        <h2>⚓ Comercio Naval Bloqueado</h2>
+        <h2>Comercio naval bloqueado</h2>
         <p>No tienes ningún poblado ni ciudad construido en un puerto marítimo. Debes edificar en una intersección con puerto (<strong>3:1</strong> o <strong>2:1</strong>) para habilitar el comercio naval.</p>
         <div class="acciones-ventana">
           <button class="primario" onclick="cerrar()">Entendido</button>
@@ -979,8 +1056,8 @@ function abrir(ventanaNombre) {
 
     const recursosHabilitados = RECURSOS.filter(r => tasar(estado.turno, r) !== null);
     caja.innerHTML = `
-      <h2>⚓ Comercio Naval</h2>
-      <p>Puertos controlados por ${ escapar(activo.nombre) }: <strong>${ puertos.map(p => p === '3:1' ? '3:1 Genérico' : `2:1 ${ ICONOS[p] } ${ NOMBRES[p] }`).join(' · ') }</strong></p>
+      <h2>Comercio naval</h2>
+      <p>Puertos controlados por ${ escapar(activo.nombre) }: <strong>${ puertos.map(p => p === '3:1' ? '3:1 Genérico' : `2:1 ${ NOMBRES[p] }`).join(' · ') }</strong></p>
       <div class="jugadores">
         ${ recursosHabilitados.map(entregar => {
           const tasa = tasar(estado.turno, entregar);
@@ -988,7 +1065,7 @@ function abrir(ventanaNombre) {
           return `
             <div class="fila-jugador">
               <div class="fila-cabecera">
-                <span>${ ICONOS[entregar] } Entregar ${ tasa } ${ NOMBRES[entregar] } (Tienes ${ conteo[entregar] })</span>
+                <span class="nombre-con-pieza">${ ICONOS[entregar] } Entregar ${ tasa } ${ NOMBRES[entregar] } (Tienes ${ conteo[entregar] })</span>
                 <span>Puerto ${ tasa }:1</span>
               </div>
               <div class="controles">
@@ -1024,11 +1101,11 @@ function abrir(ventanaNombre) {
     const puedeConfirmar = totalDa > 0 && totalPide > 0 && !repetido;
 
     caja.innerHTML = `
-      <h2>Comercio entre Jugadores (${ escapar(activo.nombre) })</h2>
+      <h2>Comercio entre jugadores (${ escapar(activo.nombre) })</h2>
       <div class="controles">
         ${ estado.jugadores.filter(j => j.id !== estado.turno).map(j => `
           <button class="${ c.socio === j.id ? 'primario' : '' }" onclick="comerciar('socio', ${ j.id })">
-            Con ${ escapar(j.nombre) }
+            ${ piezaSVG('poblado', j.color, 'pieza-inline') } Con ${ escapar(j.nombre) }
           </button>
         `).join('') }
       </div>
@@ -1039,7 +1116,7 @@ function abrir(ventanaNombre) {
           const sinMas = c.da[r] >= maxActivo[r] || maxActivo[r] <= 0;
           return `
             <div class="caja-recurso ${ c.da[r] > 0 ? 'activa' : '' }">
-              <span>${ ICONOS[r] } ${ NOMBRES[r] }</span>
+              <span class="nombre-con-pieza">${ ICONOS[r] } ${ NOMBRES[r] }</span>
               <span class="stock-recurso">Tienes: ${ maxActivo[r] }</span>
               <div class="controles-cantidad">
                 <button class="boton-ajuste" ${ sinMenos ? 'disabled' : '' } onclick="comerciar('ajustar', 'da', '${ r }', -1)">-</button>
@@ -1057,7 +1134,7 @@ function abrir(ventanaNombre) {
           const sinMas = c.pide[r] >= maxSocio[r] || maxSocio[r] <= 0;
           return `
             <div class="caja-recurso ${ c.pide[r] > 0 ? 'activa' : '' }">
-              <span>${ ICONOS[r] } ${ NOMBRES[r] }</span>
+              <span class="nombre-con-pieza">${ ICONOS[r] } ${ NOMBRES[r] }</span>
               <span class="stock-recurso">Disp.: ${ maxSocio[r] }</span>
               <div class="controles-cantidad">
                 <button class="boton-ajuste" ${ sinMenos ? 'disabled' : '' } onclick="comerciar('ajustar', 'pide', '${ r }', -1)">-</button>
@@ -1070,14 +1147,14 @@ function abrir(ventanaNombre) {
       </div>
       <div class="acciones-ventana">
         <button onclick="estado.comercio=null; cerrar()">Cancelar</button>
-        <button class="exito" ${ !puedeConfirmar ? 'disabled' : '' } onclick="comerciar('ejecutar')">Confirmar Intercambio</button>
+        <button class="exito" ${ !puedeConfirmar ? 'disabled' : '' } onclick="comerciar('ejecutar')">Confirmar intercambio</button>
       </div>
     `;
   } else if (ventanaNombre === 'invento') {
     if (!estado.invento) estado.invento = [];
     const faltan = 2 - estado.invento.length;
     caja.innerHTML = `
-      <h2>Año de la Abundancia</h2>
+      <h2>Año de la abundancia</h2>
       <p>Elige ${ faltan } recurso(s) gratuitos de la banca:</p>
       <div class="selector-recursos">
         ${ RECURSOS.map(r => `
@@ -1107,14 +1184,14 @@ function abrir(ventanaNombre) {
       return puntuar(b.id, true) - puntuar(a.id, true);
     });
     caja.innerHTML = `
-      <h2>🏆 ¡Ganador: ${ escapar(g.nombre) }!</h2>
+      <h2>Ganador: ${ escapar(g.nombre) }</h2>
       <p><strong>${ escapar(g.nombre) }</strong> vence con <strong>${ puntuar(g.id, true) } Puntos de Victoria</strong>.</p>
       <div class="jugadores">
         ${ clasificacion.map((j, pos) => `
           <div class="fila-jugador ${ j.id === estado.ganador ? 'ganador-duelo' : '' }">
             <div class="fila-cabecera">
-              <span>#${ pos + 1 } · ${ escapar(j.nombre) }</span>
-              <span>${ puntuar(j.id, true) } PV Totales</span>
+              <span class="nombre-con-pieza">#${ pos + 1 } · ${ piezaSVG('poblado', j.color, 'pieza-inline') } ${ escapar(j.nombre) }</span>
+              <span>${ puntuar(j.id, true) } PV</span>
             </div>
             <div>
               <span>Cartas PV ocultas: ${ j.desarrollos.filter(d => d.tipo === 'punto').length } · Caballeros: ${ j.caballeros } · Ruta: ${ j.tramo }</span>
@@ -1123,8 +1200,8 @@ function abrir(ventanaNombre) {
         `).join('') }
       </div>
       <div class="acciones-ventana">
-        <button onclick="alternar('inicio')">Configurar Mesa</button>
-        <button class="primario" onclick="reiniciar(estado.modo)">Revancha Inmediata</button>
+        <button onclick="alternar('inicio')">Volver al menú</button>
+        <button class="primario" onclick="reiniciar(estado.modo)">Nueva partida</button>
       </div>
     `;
   }
@@ -1309,58 +1386,92 @@ function progresar(tipo, recurso) {
   }
 }
 
+function iconoTerrenoTableroSVG(terreno, x, y) {
+  const g = {
+    madera: `<polygon points="0,-10 -7,1 -3,1 -8,8 8,8 3,1 7,1" fill="#f5ebd6"/><rect x="-1.5" y="8" width="3" height="3.5" fill="#d6b888"/>`,
+    arcilla: `<rect x="-9" y="-6" width="8" height="4.5" rx="0.8" fill="#f5ebd6"/><rect x="1" y="-6" width="8" height="4.5" rx="0.8" fill="#f5ebd6"/><rect x="-5" y="0" width="10" height="4.5" rx="0.8" fill="#f5ebd6"/><rect x="-9" y="6" width="7" height="3.5" rx="0.8" fill="#f5ebd6"/><rect x="0" y="6" width="9" height="3.5" rx="0.8" fill="#f5ebd6"/>`,
+    lana: `<circle cx="-3.5" cy="-1" r="4" fill="#f5ebd6"/><circle cx="3.5" cy="-1" r="4" fill="#f5ebd6"/><circle cx="0" cy="-3.5" r="4" fill="#f5ebd6"/><circle cx="0" cy="2" r="4" fill="#f5ebd6"/><rect x="-4" y="5" width="2" height="4.5" rx="0.8" fill="#2b1d0e"/><rect x="2" y="5" width="2" height="4.5" rx="0.8" fill="#2b1d0e"/>`,
+    trigo: `<path d="M0,-9v19M0,-5l-4,-2.5M0,-5l4,-2.5M0,0l-4.5,-2.5M0,0l4.5,-2.5M0,5l-4.5,-2.5M0,5l4.5,-2.5" stroke="#f5ebd6" stroke-width="2.2" stroke-linecap="round"/>`,
+    mineral: `<polygon points="-10,8 -3,-7 3,3 6,-2 10,8" fill="#f5ebd6"/><polygon points="-3,-7 0,-1 -5.5,-1" fill="#d6b888"/>`,
+    desierto: `<path d="M-10,6q5,-6 10,0t10,0v3h-20z" fill="#8b5a2b"/><circle cx="5" cy="-4" r="3" fill="#8b5a2b"/>`
+  };
+  return `<g transform="translate(${ x }, ${ y }) scale(0.95)" class="decoracion-hex" filter="url(#sombraFicha)">${ g[terreno] || '' }</g>`;
+}
+
 function dibujar(seccion = 'todo') {
   if (seccion === 'todo' || seccion === 'tablero') {
     const svg = document.getElementById('lienzo');
     const radio = 52;
+    const usarAnimacionIsla = animarAperturaIsla;
+    animarAperturaIsla = false;
+
     let html = `
       <defs>
-        <radialGradient id="grad-mar" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#0284c7" stop-opacity="0.45" />
-          <stop offset="75%" stop-color="#0369a1" stop-opacity="0.22" />
-          <stop offset="100%" stop-color="#082f49" stop-opacity="0" />
+        <radialGradient id="grad-mar" cx="50%" cy="50%" r="52%">
+          <stop offset="0%" stop-color="#0f456b" stop-opacity="0.7" />
+          <stop offset="72%" stop-color="#0a314d" stop-opacity="0.88" />
+          <stop offset="100%" stop-color="#082840" stop-opacity="0.96" />
         </radialGradient>
-        <radialGradient id="grad-madera" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#22c55e" />
-          <stop offset="55%" stop-color="#15803d" />
-          <stop offset="100%" stop-color="#14532d" />
-        </radialGradient>
-        <radialGradient id="grad-arcilla" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#ea580c" />
-          <stop offset="60%" stop-color="#c2410c" />
-          <stop offset="100%" stop-color="#7c2d12" />
-        </radialGradient>
-        <radialGradient id="grad-lana" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#a3e635" />
-          <stop offset="55%" stop-color="#65a30d" />
-          <stop offset="100%" stop-color="#3f6212" />
-        </radialGradient>
-        <radialGradient id="grad-trigo" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#fde047" />
-          <stop offset="58%" stop-color="#eab308" />
-          <stop offset="100%" stop-color="#a16207" />
-        </radialGradient>
-        <radialGradient id="grad-mineral" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#94a3b8" />
-          <stop offset="55%" stop-color="#64748b" />
-          <stop offset="100%" stop-color="#334155" />
-        </radialGradient>
-        <radialGradient id="grad-desierto" cx="40%" cy="35%" r="70%">
-          <stop offset="0%" stop-color="#fef08a" />
-          <stop offset="60%" stop-color="#d6b888" />
-          <stop offset="100%" stop-color="#a16207" />
-        </radialGradient>
+
+        <!-- Patrón Bosque: triángulos de pinos -->
+        <pattern id="pat-madera" width="24" height="24" patternUnits="userSpaceOnUse">
+          <rect width="24" height="24" fill="#15803d" />
+          <polygon points="6,3 1,13 11,13" fill="#0f5c2b" />
+          <polygon points="18,12 13,22 23,22" fill="#0f5c2b" />
+          <polygon points="18,2 14,10 22,10" fill="#1e9e4f" opacity="0.55" />
+          <polygon points="6,14 2,22 10,22" fill="#1e9e4f" opacity="0.45" />
+        </pattern>
+
+        <!-- Patrón Arcilla: líneas de ladrillos y estratos -->
+        <pattern id="pat-arcilla" width="24" height="16" patternUnits="userSpaceOnUse">
+          <rect width="24" height="16" fill="#c2410c" />
+          <path d="M0 8h24M0 16h24M12 0v8M24 8v8" stroke="#8c2d07" stroke-width="2" />
+          <rect x="2" y="2" width="8" height="4" fill="#dc561f" opacity="0.45" />
+          <rect x="14" y="10" width="8" height="4" fill="#dc561f" opacity="0.45" />
+        </pattern>
+
+        <!-- Patrón Lana: ondulaciones y matas de pasto -->
+        <pattern id="pat-lana" width="24" height="20" patternUnits="userSpaceOnUse">
+          <rect width="24" height="20" fill="#65a30d" />
+          <path d="M2 10q5-5 10 0t10 0" fill="none" stroke="#487508" stroke-width="2" stroke-linecap="round" />
+          <path d="M6 17l-2-4M6 17l2-4M18 6l-2-4M18 6l2-4" stroke="#84cc16" stroke-width="1.8" stroke-linecap="round" />
+        </pattern>
+
+        <!-- Patrón Trigo: surcos diagonales de espigas -->
+        <pattern id="pat-trigo" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+          <rect width="16" height="16" fill="#ca8a04" />
+          <line x1="0" y1="0" x2="0" y2="16" stroke="#9a6700" stroke-width="3" />
+          <line x1="8" y1="0" x2="8" y2="16" stroke="#e3a81e" stroke-width="2" />
+          <line x1="4" y1="3" x2="7" y2="6" stroke="#f5ebd6" stroke-width="1.3" opacity="0.45" />
+          <line x1="12" y1="10" x2="15" y2="13" stroke="#f5ebd6" stroke-width="1.3" opacity="0.45" />
+        </pattern>
+
+        <!-- Patrón Mineral: picos de montaña -->
+        <pattern id="pat-mineral" width="28" height="22" patternUnits="userSpaceOnUse">
+          <rect width="28" height="22" fill="#475569" />
+          <polygon points="0,22 8,6 16,22" fill="#334155" />
+          <polygon points="8,6 12,14 5,14" fill="#94a3b8" opacity="0.45" />
+          <polygon points="12,22 20,8 28,22" fill="#2c3849" />
+          <polygon points="20,8 23,14 17,14" fill="#cbd5e1" opacity="0.35" />
+        </pattern>
+
+        <!-- Patrón Desierto: dunas de arena -->
+        <pattern id="pat-desierto" width="28" height="16" patternUnits="userSpaceOnUse">
+          <rect width="28" height="16" fill="#d6b888" />
+          <path d="M0 8q7-5 14 0t14 0" fill="none" stroke="#b89560" stroke-width="2" />
+          <path d="M0 15q7-4 14 0t14 0" fill="none" stroke="#e8d3ad" stroke-width="1.5" />
+        </pattern>
+
         <filter id="sombraFicha" filterUnits="userSpaceOnUse" x="-400" y="-400" width="800" height="800">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.55" />
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5" />
         </filter>
         <pattern id="bloqueoRojo" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">
-          <rect width="16" height="16" fill="rgba(127, 29, 29, 0.28)" />
-          <line x1="0" y1="0" x2="0" y2="16" stroke="rgba(239, 68, 68, 0.85)" stroke-width="5.5" />
-          <animateTransform attributeName="patternTransform" type="translate" from="0,0" to="16,0" additive="sum" dur="0.75s" repeatCount="indefinite" />
+          <rect width="16" height="16" fill="rgba(185, 28, 28, 0.25)" />
+          <line x1="0" y1="0" x2="0" y2="16" stroke="rgba(185, 28, 28, 0.85)" stroke-width="5" />
         </pattern>
       </defs>
-      <circle cx="0" cy="0" r="285" fill="url(#grad-mar)" class="decoracion-hex" />
-      <circle cx="0" cy="0" r="250" fill="none" stroke="rgba(253, 230, 138, 0.18)" stroke-width="2" stroke-dasharray="8 6" class="decoracion-hex" />
+      <circle cx="0" cy="0" r="282" fill="url(#grad-mar)" stroke="#d6b888" stroke-width="4" class="decoracion-hex" />
+      <circle cx="0" cy="0" r="252" fill="none" stroke="rgba(214, 184, 136, 0.28)" stroke-width="1.8" stroke-dasharray="8 6" class="decoracion-hex" />
     `;
 
     const nodosActivos =
@@ -1385,21 +1496,23 @@ function dibujar(seccion = 'todo') {
         const ang = (Math.PI / 180) * (60 * i - 30);
         verticesCosta.push(`${ h.x + (radio + 7) * Math.cos(ang) },${ h.y + (radio + 7) * Math.sin(ang) }`);
       }
-      html += `<polygon points="${ verticesCosta.join(' ') }" fill="#fde68a" opacity="0.28" class="decoracion-hex" />`;
+      html += `<polygon points="${ verticesCosta.join(' ') }" fill="#d6b888" opacity="0.38" class="decoracion-hex" />`;
     });
 
     estado.puertos.forEach(p => {
       const n1 = estado.nodos[p.nodos[0]];
       const n2 = estado.nodos[p.nodos[1]];
-      const etiqueta = p.tipo === '3:1' ? '3:1' : `2:1 ${ ICONOS[p.tipo] }`;
+      const etiqueta = p.tipo === '3:1' ? '3:1' : `2:1 ${ NOMBRES[p.tipo].slice(0, 3) }`;
+      const colorPuerto = p.tipo === '3:1' ? '#f5ebd6' : COLORES[p.tipo];
+      const colorTextoPuerto = p.tipo === '3:1' ? '#2b1d0e' : '#f5ebd6';
       html += `
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#78350f" stroke-width="5" stroke-linecap="round" class="decoracion-hex" />
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#fde047" stroke-width="2" stroke-dasharray="4 3" class="decoracion-hex" />
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#78350f" stroke-width="5" stroke-linecap="round" class="decoracion-hex" />
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#fde047" stroke-width="2" stroke-dasharray="4 3" class="decoracion-hex" />
+        <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" class="decoracion-hex" />
+        <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#d6b888" stroke-width="1.8" stroke-dasharray="4 3" class="decoracion-hex" />
+        <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" class="decoracion-hex" />
+        <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#d6b888" stroke-width="1.8" stroke-dasharray="4 3" class="decoracion-hex" />
         <g transform="translate(${ p.x }, ${ p.y })" filter="url(#sombraFicha)" class="decoracion-hex">
-          <rect x="-26" y="-13" width="52" height="26" rx="8" fill="#0f172a" stroke="#fde047" stroke-width="1.8" />
-          <text x="0" y="4" text-anchor="middle" fill="#f8fafc" font-size="10.5" font-weight="bold">${ etiqueta }</text>
+          <rect x="-27" y="-12" width="54" height="24" rx="6" fill="${ colorPuerto }" stroke="#2b1d0e" stroke-width="1.8" />
+          <text x="0" y="4" text-anchor="middle" fill="${ colorTextoPuerto }" font-size="10" font-weight="bold">${ etiqueta }</text>
         </g>
       `;
     });
@@ -1417,11 +1530,11 @@ function dibujar(seccion = 'todo') {
       const tieneLadron = estado.ladron === h.id;
       const recienLadron = estado.recienCreada && estado.recienCreada.tipo === 'ladron' && estado.recienCreada.id === h.id;
       html += `
-        <g id="hex-${ h.id }" class="grupo-hex ${ clicable ? 'clicable' : '' }" onclick="${ clicable ? `mover(${ h.id })` : '' }">
-          <polygon points="${ vertices.join(' ') }" fill="url(#grad-${ h.terreno })" class="hexagono ${ clicable ? 'clicable' : '' } ${ produciendo ? 'produciendo' : '' }" />
-          <polygon points="${ verticesInternos.join(' ') }" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" class="decoracion-hex" />
+        <g id="hex-${ h.id }" style="--i:${ h.id }" class="grupo-hex ${ usarAnimacionIsla ? 'hex-apertura' : '' } ${ clicable ? 'clicable' : '' }" onclick="${ clicable ? `mover(${ h.id })` : '' }">
+          <polygon points="${ vertices.join(' ') }" fill="url(#pat-${ h.terreno })" class="hexagono ${ clicable ? 'clicable' : '' } ${ produciendo ? 'produciendo' : '' }" />
+          <polygon points="${ verticesInternos.join(' ') }" fill="none" stroke="rgba(245,235,214,0.28)" stroke-width="1.2" class="decoracion-hex" />
           ${ tieneLadron ? `<polygon points="${ vertices.join(' ') }" fill="url(#bloqueoRojo)" class="capa-bloqueo-ladron" />` : '' }
-          <text x="${ h.x }" y="${ h.y - 19 }" text-anchor="middle" font-size="17" class="decoracion-hex" filter="url(#sombraFicha)">${ ICONOS[h.terreno] }</text>
+          ${ iconoTerrenoTableroSVG(h.terreno, h.x, h.y - 22) }
       `;
 
       if (h.numero) {
@@ -1429,10 +1542,10 @@ function dibujar(seccion = 'todo') {
         const puntosProb = 6 - Math.abs(7 - h.numero);
         html += `
           <g class="decoracion-hex" filter="url(#sombraFicha)">
-            <circle cx="${ h.x }" cy="${ h.y + 5 }" r="16.5" fill="#fef3c7" stroke="#92400e" stroke-width="2" />
-            <circle cx="${ h.x }" cy="${ h.y + 5 }" r="13.5" fill="none" stroke="rgba(146, 64, 14, 0.28)" stroke-width="1" />
-            <text x="${ h.x }" y="${ h.y + 8 }" text-anchor="middle" font-size="13.5" font-weight="900" fill="${ esRojo ? '#dc2626' : '#0f172a' }">${ h.numero }</text>
-            <text x="${ h.x }" y="${ h.y + 16 }" text-anchor="middle" font-size="8.5" fill="${ esRojo ? '#dc2626' : '#0f172a' }">${ '•'.repeat(puntosProb) }</text>
+            <circle cx="${ h.x }" cy="${ h.y + 6 }" r="16.5" fill="#f5ebd6" stroke="#2b1d0e" stroke-width="2" />
+            <circle cx="${ h.x }" cy="${ h.y + 6 }" r="13.5" fill="none" stroke="rgba(43, 29, 14, 0.25)" stroke-width="1" />
+            <text x="${ h.x }" y="${ h.y + 9 }" text-anchor="middle" font-size="13.5" font-weight="900" fill="${ esRojo ? '#b91c1c' : '#2b1d0e' }">${ h.numero }</text>
+            <text x="${ h.x }" y="${ h.y + 17 }" text-anchor="middle" font-size="8.5" fill="${ esRojo ? '#b91c1c' : '#2b1d0e' }">${ '•'.repeat(puntosProb) }</text>
           </g>
         `;
       }
@@ -1440,8 +1553,8 @@ function dibujar(seccion = 'todo') {
       if (tieneLadron) {
         html += `
           <g transform="translate(${ h.x + 18 }, ${ h.y - 12 })" class="decoracion-hex ${ recienLadron ? 'pieza-mapa' : '' }" filter="url(#sombraFicha)">
-            <circle cx="0" cy="-6" r="6.5" fill="#0f172a" stroke="#ef4444" stroke-width="2" />
-            <path d="M -8.5 10 Q 0 -4 8.5 10 Z" fill="#0f172a" stroke="#ef4444" stroke-width="2" />
+            <circle cx="0" cy="-6" r="6.5" fill="#2b1d0e" stroke="#f5ebd6" stroke-width="2" />
+            <path d="M -8.5 10 Q 0 -4 8.5 10 Z" fill="#2b1d0e" stroke="#f5ebd6" stroke-width="2" />
           </g>
         `;
       }
@@ -1456,7 +1569,7 @@ function dibujar(seccion = 'todo') {
         const esNueva = estado.recienCreada && estado.recienCreada.tipo === 'camino' && estado.recienCreada.id === c.id;
         html += `
           <g class="${ esNueva ? 'pieza-mapa' : '' }" filter="url(#sombraFicha)">
-            <line x1="${ n1.x }" y1="${ n1.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#0f172a" stroke-width="9.5" class="camino" />
+            <line x1="${ n1.x }" y1="${ n1.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#2b1d0e" stroke-width="9.5" class="camino" />
             <line x1="${ n1.x }" y1="${ n1.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="${ color }" stroke-width="6" class="camino" />
           </g>
         `;
@@ -1479,15 +1592,15 @@ function dibujar(seccion = 'todo') {
         if (n.edificio === 'poblado') {
           html += `
             <g transform="translate(${ n.x }, ${ n.y })" ${ accion } style="${ disponible ? 'cursor:pointer' : '' }" filter="url(#sombraFicha)">
-              <polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="${ color }" stroke="${ disponible ? '#fde047' : '#0f172a' }" stroke-width="${ disponible ? '3.5' : '2.2' }" class="${ esNueva ? 'pieza-mapa' : '' }" />
-              <line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(15,23,42,0.45)" stroke-width="1.5" class="decoracion-hex" />
+              <polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="${ color }" stroke="${ disponible ? '#ca8a04' : '#2b1d0e' }" stroke-width="${ disponible ? '3.5' : '2.2' }" class="${ esNueva ? 'pieza-mapa' : '' }" />
+              <line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.5" class="decoracion-hex" />
             </g>
           `;
         } else {
           html += `
             <g transform="translate(${ n.x }, ${ n.y })" filter="url(#sombraFicha)">
-              <polygon points="-13,10 -13,-2 -5,-13 3,-2 13,-2 13,10" fill="${ color }" stroke="#0f172a" stroke-width="2.2" class="${ esNueva ? 'pieza-mapa' : '' }" />
-              <rect x="-3" y="2" width="6" height="8" fill="rgba(15,23,42,0.55)" class="decoracion-hex" />
+              <polygon points="-13,10 -13,-2 -5,-13 3,-2 13,-2 13,10" fill="${ color }" stroke="#2b1d0e" stroke-width="2.2" class="${ esNueva ? 'pieza-mapa' : '' }" />
+              <rect x="-3" y="2" width="6" height="8" fill="rgba(43,29,14,0.5)" class="decoracion-hex" />
             </g>
           `;
         }
@@ -1503,17 +1616,18 @@ function dibujar(seccion = 'todo') {
 
   if (seccion === 'todo' || seccion === 'panel') {
     const activo = estado.jugadores[estado.turno];
+    const svgCartaReverso = typeof iconoSVG === 'function' ? iconoSVG('carta') : '';
 
     document.getElementById('marcador').innerHTML = estado.jugadores
       .map(j => {
-        const medallas = `${ estado.ruta === j.id ? '🛣️' : '' }${ estado.ejercito === j.id ? '⚔️' : '' }`;
+        const medallas = `${ estado.ruta === j.id ? iconoSVG('carreteras') : '' }${ estado.ejercito === j.id ? iconoSVG('caballero') : '' }`;
         const infoReserva = `Reserva: ${ j.piezas.poblado } Pob · ${ j.piezas.ciudad } Ciu · ${ j.piezas.carretera } Car | Caballeros: ${ j.caballeros } | Ruta: ${ j.tramo }`;
         return `
           <div id="perfil-${ j.id }" class="ficha-jugador ${ j.id === estado.turno ? 'activo' : '' }" title="${ infoReserva }">
-            <span class="punto-color" style="background:${ j.color }"></span>
+            ${ piezaSVG('poblado', j.color, 'pieza-inline') }
             <strong>${ escapar(j.nombre) }</strong>
-            <span>${ puntuar(j.id, false) } PV ${ medallas }</span>
-            <span class="meta-jugador">🎴 ${ j.recursos.length } · 📜 ${ j.desarrollos.length }</span>
+            <span class="pv-jugador">${ puntuar(j.id, false) } PV ${ medallas }</span>
+            <span class="meta-jugador">${ iconoSVG('carta') } ${ j.recursos.length } · ${ iconoSVG('desarrollo') } ${ j.desarrollos.length }</span>
           </div>
         `;
       })
@@ -1521,14 +1635,14 @@ function dibujar(seccion = 'todo') {
 
     const etiquetaFase =
       estado.fase === 'inicial' ? `Preparación (${ estado.indice + 1 }/${ estado.secuencia.length })` :
-      estado.fase === 'tirada' ? `Paso 1: Tirar Dados` :
-      estado.fase === 'ladron' ? `Mover Ladrón` :
-      estado.fase === 'principal' ? `Paso 2: Comerciar y Construir` :
-      `Partida Finalizada`;
+      estado.fase === 'tirada' ? `Tirar dados` :
+      estado.fase === 'ladron' ? `Mover ladrón` :
+      estado.fase === 'principal' ? `Comerciar y construir` :
+      `Partida finalizada`;
 
     const pasoEl = document.getElementById('pasoActual');
     const ayudaEl = document.getElementById('ayudaActual');
-    if (pasoEl) pasoEl.innerHTML = `<span class="punto-color" style="background:${ activo.color }"></span> ${ escapar(activo.nombre) } · ${ etiquetaFase }`;
+    if (pasoEl) pasoEl.innerHTML = `${ piezaSVG('poblado', activo.color, 'pieza-inline') } ${ escapar(activo.nombre) } · ${ etiquetaFase }`;
     if (ayudaEl) ayudaEl.textContent = estado.mensaje;
 
     const bancaEl = document.getElementById('banca');
@@ -1545,15 +1659,15 @@ function dibujar(seccion = 'todo') {
     if (insigniasEl) {
       insigniasEl.innerHTML = `
         <div class="insignia">
-          <span>🛣️ Gran Ruta Comercial (+2 PV)</span>
+          <span class="nombre-con-pieza">${ iconoSVG('carreteras') } Gran ruta comercial (+2 PV)</span>
           <strong>${ estado.ruta !== null ? escapar(estado.jugadores[estado.ruta].nombre) : 'Libre (mín. 5)' }</strong>
         </div>
         <div class="insignia">
-          <span>⚔️ Gran Ejército (+2 PV)</span>
+          <span class="nombre-con-pieza">${ iconoSVG('caballero') } Gran ejército (+2 PV)</span>
           <strong>${ estado.ejercito !== null ? escapar(estado.jugadores[estado.ejercito].nombre) : 'Libre (mín. 3)' }</strong>
         </div>
         <div class="insignia">
-          <span>📜 Mazo de Desarrollo</span>
+          <span class="nombre-con-pieza">${ iconoSVG('desarrollo') } Mazo de desarrollo</span>
           <strong>${ estado.mazo.length } restantes</strong>
         </div>
       `;
@@ -1567,7 +1681,7 @@ function dibujar(seccion = 'todo') {
         : activo.recursos
             .map(rec => `
               <div class="carta revelable" data-tipo="${ rec }" onclick="voltear(this, event)">
-                <div class="reverso">🎴</div>
+                <div class="reverso">${ svgCartaReverso }</div>
                 <div class="frente">
                   <span>${ ICONOS[rec] }</span>
                   <span>${ NOMBRES[rec] }</span>
@@ -1585,11 +1699,11 @@ function dibujar(seccion = 'todo') {
               const nueva = d.comprada === estado.ronda && d.tipo !== 'punto';
               return `
                 <div class="carta desarrollo revelable" onclick="usar(${ idx })" title="${ info.detalle }">
-                  <div class="reverso">📜</div>
+                  <div class="reverso">${ iconoSVG('desarrollo') }</div>
                   <div class="frente">
                     <span>${ info.icono }</span>
                     <span>${ info.titulo }</span>
-                    <small>${ nueva ? 'Espera 1 turno' : 'Clic: usar' }</small>
+                    <small>${ nueva ? 'Espera 1 turno' : 'Usar' }</small>
                   </div>
                 </div>
               `;
@@ -1614,7 +1728,7 @@ function dibujar(seccion = 'todo') {
           <div class="dado rojo ${ claseDado }">${ estado.dados[1] }</div>
         </div>
         <button class="primario" ${ bloqueadoCooldown || estado.tirado ? 'disabled' : '' } onclick="lanzar()">
-          ${ estado.girandoDados ? '🎲 Tirando dados...' : bloqueadoCooldown ? '⏳ Espera 1s...' : '🎲 Lanzar Dados' }
+          ${ estado.girandoDados ? 'Tirando dados...' : bloqueadoCooldown ? 'Espera...' : 'Lanzar dados' }
         </button>
       `;
     } else if (estado.fase === 'ladron') {
@@ -1623,12 +1737,12 @@ function dibujar(seccion = 'todo') {
           <div class="dado ${ claseDado }">${ estado.dados[0] }</div>
           <div class="dado rojo ${ claseDado }">${ estado.dados[1] }</div>
         </div>
-        <span class="meta-jugador">Haz clic en cualquier parte de otro hexágono para mover al ladrón</span>
+        <span class="meta-jugador">Haz clic en otro hexágono para mover al ladrón</span>
       `;
     } else if (estado.fase === 'principal') {
       if (estado.gratis > 0) {
         barraAcciones.innerHTML = `
-          <span class="meta-jugador">🛣️ Coloca ${ estado.gratis } carretera(s) gratuita(s) en el mapa</span>
+          <span class="meta-jugador">Coloca ${ estado.gratis } carretera(s) gratuita(s) en el mapa</span>
         `;
       } else {
         const puedeCar = pagar('verificar', estado.turno, COSTES.carretera) && activo.piezas.carretera > 0 && validar('carretera', estado.turno, null).length > 0;
@@ -1644,31 +1758,31 @@ function dibujar(seccion = 'todo') {
             <div class="dado rojo ${ claseDado }">${ estado.dados[1] }</div>
           </div>
           <button class="boton-accion disponible ${ estado.herramienta === 'carretera' ? 'activo' : '' }" ${ !puedeCar ? 'disabled' : '' } onclick="seleccionar('carretera')">
-            <span>🛣️ Carretera</span>
-            <small>🧱1 🌲1 (${ activo.piezas.carretera })</small>
+            <span class="nombre-con-pieza">${ piezaSVG('carretera', activo.color, 'pieza-inline') } Carretera</span>
+            <small>1 Arc · 1 Mad (${ activo.piezas.carretera })</small>
           </button>
           <button class="boton-accion disponible ${ estado.herramienta === 'poblado' ? 'activo' : '' }" ${ !puedePob ? 'disabled' : '' } onclick="seleccionar('poblado')">
-            <span>🏠 Poblado</span>
-            <small>🧱1 🌲1 🐑1 🌾1 (${ activo.piezas.poblado })</small>
+            <span class="nombre-con-pieza">${ piezaSVG('poblado', activo.color, 'pieza-inline') } Poblado</span>
+            <small>1 Arc · 1 Mad · 1 Lan · 1 Tri (${ activo.piezas.poblado })</small>
           </button>
           <button class="boton-accion disponible ${ estado.herramienta === 'ciudad' ? 'activo' : '' }" ${ !puedeCiu ? 'disabled' : '' } onclick="seleccionar('ciudad')">
-            <span>🏛️ Ciudad</span>
-            <small>⛰️3 🌾2 (${ activo.piezas.ciudad })</small>
+            <span class="nombre-con-pieza">${ piezaSVG('ciudad', activo.color, 'pieza-inline') } Ciudad</span>
+            <small>3 Min · 2 Tri (${ activo.piezas.ciudad })</small>
           </button>
           <button class="boton-accion disponible" ${ !puedeDes ? 'disabled' : '' } onclick="comprar()">
-            <span>📜 Desarrollo</span>
-            <small>⛰️1 🐑1 🌾1</small>
+            <span class="nombre-con-pieza">${ iconoSVG('desarrollo') } Desarrollo</span>
+            <small>1 Min · 1 Lan · 1 Tri</small>
           </button>
           <button class="boton-accion ${ tienePuerto ? 'disponible' : '' }" ${ !tienePuerto ? 'disabled title="Requiere tener un poblado o ciudad en un puerto"' : '' } onclick="abrir('maritimo')">
-            <span>⚓ Naval</span>
+            <span class="nombre-con-pieza">${ iconoSVG('puerto') } Naval</span>
             <small>${ tienePuerto ? 'Puertos activos' : 'Sin puerto' }</small>
           </button>
           <button class="boton-accion" onclick="abrir('domestico')">
-            <span>🤝 Jugadores</span>
+            <span class="nombre-con-pieza">${ iconoSVG('jugadores') } Jugadores</span>
             <small>Intercambiar</small>
           </button>
           <button class="exito" ${ bloqueadoTurno ? 'disabled' : '' } onclick="pasar()">
-            ${ estado.repartiendo ? '🎁 Repartiendo...' : bloqueadoCooldown ? '⏳ 1s...' : 'Terminar Turno ⏭' }
+            ${ estado.repartiendo ? 'Repartiendo...' : bloqueadoCooldown ? 'Espera...' : 'Terminar turno' }
           </button>
         `;
       }
@@ -1678,10 +1792,8 @@ function dibujar(seccion = 'todo') {
 
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
-    reiniciar('azar');
-    if (cargar('verificar')) {
-      const botonGuardada = document.getElementById('botonGuardada');
-      if (botonGuardada) botonGuardada.classList.remove('oculto');
-    }
+    inicializarMenu();
+    reiniciar('azar', true);
+    actualizarBotonesContinuar();
   });
 }

@@ -132,7 +132,7 @@ function producir(suma, diferirEntrega = false, alRecibir = null, blanco = estad
             blanco.jugadores[jid].recursos.push(rec);
           }
         }
-        if (cant > 0) resumen.push(`${ blanco.jugadores[jid].nombre } +${ cant } ${ iconosMapa[rec] }`);
+        if (cant > 0) resumen.push(`${ blanco.jugadores[jid].nombre } +${ cant } ${ nombresMapa[rec] }`);
       });
       origenesPorRecurso[rec].forEach(ev => {
         vuelos.push({
@@ -168,7 +168,7 @@ function producir(suma, diferirEntrega = false, alRecibir = null, blanco = estad
             : null
         });
       }
-      if (entregadas > 0) resumen.push(`${ blanco.jugadores[jid].nombre } +${ entregadas } ${ iconosMapa[rec] }`);
+      if (entregadas > 0) resumen.push(`${ blanco.jugadores[jid].nombre } +${ entregadas } ${ nombresMapa[rec] }`);
     } else {
       resumen.push(`Escasez de ${ nombresMapa[rec] }`);
     }

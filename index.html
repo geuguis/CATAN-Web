@@ -7,36 +7,42 @@
   <title>Catán Local — 3 a 4 Jugadores</title>
   <link rel="stylesheet" href="estilos.css">
 </head>
-<body>
+<body class="en-menu">
   <div id="inicio" class="pantalla-inicio">
-    <div class="tarjeta-inicio">
-      <div class="emblema" aria-hidden="true">☀</div>
+    <aside class="tarjeta-inicio" aria-label="Configuración de partida">
       <h1>CATÁN</h1>
-      <p class="lema">Edición Local · Multijugador en el mismo dispositivo</p>
 
       <div class="seccion-inicio">
         <div class="cabecera-jugadores-inicio">
-          <h2>Jugadores en la Mesa (<span id="contadorJugadores">3</span>/4)</h2>
-          <button id="botonJugadorExtra" class="boton-pequeno" onclick="cambiarCantidad()">➕ Añadir 4.º Jugador</button>
+          <h2>Jugadores (<span id="contadorJugadores">3</span>/4)</h2>
+          <button id="botonJugadorExtra" class="boton-pequeno" onclick="cambiarCantidad()">+ 4.º jugador</button>
         </div>
         <div class="entradas-jugadores">
           <div class="campo-jugador">
-            <span class="punto-color" style="background:#ef4444" aria-hidden="true"></span>
+            <span class="pieza-jugador-menu" id="piezaMenu0" aria-hidden="true">
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#b91c1c" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+            </span>
             <label class="etiqueta-oculta" for="nombre0">Nombre del Jugador 1</label>
             <input id="nombre0" type="text" value="Jugador 1" maxlength="16" aria-label="Nombre del Jugador 1">
           </div>
           <div class="campo-jugador">
-            <span class="punto-color" style="background:#3b82f6" aria-hidden="true"></span>
+            <span class="pieza-jugador-menu" id="piezaMenu1" aria-hidden="true">
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#1d4ed8" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+            </span>
             <label class="etiqueta-oculta" for="nombre1">Nombre del Jugador 2</label>
             <input id="nombre1" type="text" value="Jugador 2" maxlength="16" aria-label="Nombre del Jugador 2">
           </div>
           <div class="campo-jugador">
-            <span class="punto-color" style="background:#f8fafc" aria-hidden="true"></span>
+            <span class="pieza-jugador-menu" id="piezaMenu2" aria-hidden="true">
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#f5ebd6" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+            </span>
             <label class="etiqueta-oculta" for="nombre2">Nombre del Jugador 3</label>
             <input id="nombre2" type="text" value="Jugador 3" maxlength="16" aria-label="Nombre del Jugador 3">
           </div>
           <div id="bloqueJugador3" class="campo-jugador oculto">
-            <span class="punto-color" style="background:#f97316" aria-hidden="true"></span>
+            <span class="pieza-jugador-menu" id="piezaMenu3" aria-hidden="true">
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#d97706" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+            </span>
             <label class="etiqueta-oculta" for="nombre3">Nombre del Jugador 4</label>
             <input id="nombre3" type="text" value="Jugador 4" maxlength="16" aria-label="Nombre del Jugador 4">
           </div>
@@ -44,43 +50,50 @@
       </div>
 
       <div class="seccion-inicio">
-        <h2>Modo de Partida</h2>
+        <h2>Modo de partida</h2>
         <div class="modos-inicio">
           <button id="modo-azar" class="opcion-modo activo" onclick="configurar('azar')">
-            <strong>Mapa Variable</strong>
-            <small>Isla aleatoria equilibrada y colocación inicial por turnos</small>
+            <div id="mini-azar" class="miniatura-modo"></div>
+            <strong>Variable</strong>
           </button>
           <button id="modo-principiante" class="opcion-modo" onclick="configurar('principiante')">
-            <strong>Mapa Principiante</strong>
-            <small>Terrenos fijos del manual y colocación inicial por turnos</small>
+            <div id="mini-principiante" class="miniatura-modo"></div>
+            <strong>Manual</strong>
           </button>
           <button id="modo-rapido" class="opcion-modo" onclick="configurar('rapido')">
-            <strong>Inicio Rápido</strong>
-            <small>Poblados y recursos iniciales ya colocados para jugar al instante</small>
+            <div id="mini-rapido" class="miniatura-modo"></div>
+            <strong>Inicio rápido</strong>
           </button>
         </div>
       </div>
 
-      <div class="reglas-rapidas">
-        <span>🎴 Cartas siempre tapadas (pasa el ratón o toca en tu turno)</span>
-        <span>⚓ Comercio naval exclusivo con poblado o ciudad en puerto</span>
-        <span>🛡️ Ordena y tapa tus cartas antes de que te roben</span>
+      <div class="acciones-inicio">
+        <button id="botonContinuar" class="boton-secundario oculto" onclick="alternar('inicio')">Continuar partida</button>
+        <button id="botonGuardada" class="boton-secundario oculto" onclick="cargar('restaurar')">Continuar partida</button>
+        <button class="boton-empezar" onclick="iniciar()">Nueva partida</button>
       </div>
 
-      <div class="acciones-inicio">
-        <button id="botonContinuar" class="boton-secundario oculto" onclick="alternar('inicio')">↩ Volver a la Partida</button>
-        <button id="botonGuardada" class="boton-secundario oculto" onclick="cargar('restaurar')">📂 Continuar Partida Guardada</button>
-        <button class="boton-empezar" onclick="iniciar()">Empezar Nueva Partida</button>
-      </div>
-    </div>
+      <a href="https://amzn.eu/d/0e4hUqL1" target="_blank" rel="noopener noreferrer" class="boton-comprar">
+        Compra el Catán !
+      </a>
+    </aside>
   </div>
 
   <header class="hud-superior">
-    <button class="boton-icono" onclick="abrir('menu')" title="Menú de Pausa">☰ Menú</button>
+    <button class="boton-icono" onclick="abrir('menu')" title="Menú de pausa">
+      <svg class="icono-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span>Menú</span>
+    </button>
     <div id="marcador" class="marcador"></div>
     <div class="botones-hud">
-      <button class="boton-icono" onclick="alternar('reserva')">📦 Banca y Costes</button>
-      <button class="boton-icono" onclick="alternar('guia')">❓ Guía</button>
+      <button class="boton-icono" onclick="alternar('reserva')">
+        <svg class="icono-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M8 8V5h8v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <span>Banca y costes</span>
+      </button>
+      <button class="boton-icono" onclick="alternar('guia')">
+        <svg class="icono-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 7h8M8 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Guía</span>
+      </button>
     </div>
   </header>
 
@@ -91,29 +104,31 @@
 
   <aside id="panelReserva" class="panel-flotante oculto" aria-label="Banca y Costes">
     <div class="cabecera-flotante">
-      <h2>Banca y Costes de Construcción</h2>
+      <h2>Banca y costes</h2>
       <button class="cerrar-flotante" onclick="alternar('reserva')" aria-label="Cerrar panel de banca">✕</button>
     </div>
     <div id="banca" class="banca"></div>
     <div id="insignias" class="insignias"></div>
-    <div class="tabla-costes">
-      <div><strong>🛣️ Carretera (0 PV):</strong> 1 Arcilla + 1 Madera</div>
-      <div><strong>🏠 Poblado (1 PV):</strong> 1 Arcilla + 1 Madera + 1 Lana + 1 Trigo</div>
-      <div><strong>🏛️ Ciudad (2 PV):</strong> 3 Minerales + 2 Trigos (reemplaza poblado)</div>
-      <div><strong>📜 Desarrollo:</strong> 1 Mineral + 1 Lana + 1 Trigo</div>
+    <div class="tabla-costes" id="tablaCostes">
+      <div class="fila-coste"><span class="icono-coste" id="iconoCosteCarretera"></span> <strong>Carretera (0 PV):</strong> 1 Arcilla + 1 Madera</div>
+      <div class="fila-coste"><span class="icono-coste" id="iconoCostePoblado"></span> <strong>Poblado (1 PV):</strong> 1 Arcilla + 1 Madera + 1 Lana + 1 Trigo</div>
+      <div class="fila-coste"><span class="icono-coste" id="iconoCosteCiudad"></span> <strong>Ciudad (2 PV):</strong> 3 Minerales + 2 Trigos</div>
+      <div class="fila-coste"><span class="icono-coste" id="iconoCosteDesarrollo"></span> <strong>Desarrollo:</strong> 1 Mineral + 1 Lana + 1 Trigo</div>
     </div>
   </aside>
 
   <aside id="panelGuia" class="panel-flotante oculto" aria-label="Guía Rápida">
     <div class="cabecera-flotante">
-      <h2>Guía Rápida del Turno</h2>
+      <h2>Guía de la mesa</h2>
       <button class="cerrar-flotante" onclick="alternar('guia')" aria-label="Cerrar guía rápida">✕</button>
     </div>
     <div class="tabla-costes">
-      <div><strong>1. Lanzar dados:</strong> Tras terminar la animación de dados, las recompensas aparecen en los hexágonos y luego vuelan a cada perfil.</div>
-      <div><strong>2. El Ladrón (7):</strong> El hexágono con líneas rojas en movimiento está bloqueado y no produce recursos.</div>
-      <div><strong>3. Comercio Naval:</strong> Requiere tener al menos un poblado o ciudad construido en un puerto (3:1 o 2:1).</div>
-      <div><strong>4. Libro Oficial:</strong> Puedes abrir el PDF oficial desde el botón ☰ Menú en cualquier momento.</div>
+      <div><strong>1. Producción:</strong> Al lanzar los dados, los terrenos con ese número entregan recursos a los poblados (1) y ciudades (2) adyacentes.</div>
+      <div><strong>2. El ladrón (7):</strong> Con un 7, quien tenga más de 7 cartas descarta la mitad y se mueve al ladrón para bloquear un terreno y robar 1 carta.</div>
+      <div><strong>3. Cartas ocultas:</strong> Tus cartas están siempre tapadas en la mesa; pasa el ratón o tócalas en tu turno para mirarlas.</div>
+      <div><strong>4. Defensa ante robo:</strong> Antes de que un rival te robe, puedes ordenar y tapar tus cartas.</div>
+      <div><strong>5. Comercio naval:</strong> Requiere tener al menos un poblado o ciudad construido en un puerto (3:1 o 2:1).</div>
+      <div><strong>6. Reglamento:</strong> Puedes consultar el manual completo desde el menú en cualquier momento.</div>
     </div>
   </aside>
 
