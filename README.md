@@ -1,25 +1,21 @@
 <div align="center">
 
-# CATÁN Web
+<img src="https://capsule-render.vercel.app/api?type=venom&height=210&color=0:06131f,50:0b2239,100:1e293b&text=CATAN%20WEB&fontColor=fde047&fontSize=64&fontAlignY=42&desc=Arquitectura%20Axial%20%C2%B7%20Motor%20de%20Reglas%20Puras%20%C2%B7%20Multijugador%20Hot-Seat&descColor=e2e8f0&descSize=16&descAlignY=68&stroke=f59e0b&strokeWidth=1" width="100%" alt="Catan Web Header" />
 
 ![Imagen Gameplay](img/imgGameplay.png)
-
-**Implementación web de Catán (5.ª Edición) con tablero SVG, arquitectura axial y motor de reglas desacoplado.**
 
 <br />
 
 <a href="https://geuguis.github.io/CATAN-Web/">
-  <img src="https://img.shields.io/badge/JUGAR_AHORA-geuguis.github.io%2FCATAN--Web-a8322a?style=for-the-badge&labelColor=2b1d0e&logoColor=f4ede2" height="42" alt="Jugar Ahora en el Navegador" />
+  <img src="https://img.shields.io/badge/JUGAR_AHORA_EN_EL_NAVEGADOR-geuguis.github.io%2FCATAN--Web-f59e0b?style=for-the-badge&labelColor=06131f&logoColor=white" height="42" alt="Jugar Ahora en el Navegador" />
 </a>
 
 <br /><br />
 
-[![Integración Continua](https://img.shields.io/github/actions/workflow/status/geuguis/CATAN-Web/tests.yml?branch=main&style=flat-square&label=TESTS_UNITARIOS&labelColor=2b1d0e&color=456b3c)](https://github.com/geuguis/CATAN-Web/actions)
-[![Dependencias](https://img.shields.io/badge/DEPENDENCIAS-0_EXTERNAS-6d7480?style=flat-square&labelColor=2b1d0e)](./package.json)
-[![Licencia](https://img.shields.io/badge/LICENCIA-MIT-2b1d0e?style=flat-square&labelColor=2b1d0e)](./LICENSE.txt)
-
-> [!NOTE]
-> **Aviso legal**: Proyecto de fans, sin afiliación con Catan GmbH ni Devir/Kosmos. La marca CATAN y las reglas originales son propiedad de sus respectivos titulares. La licencia MIT cubre únicamente el código fuente del proyecto. El manual oficial de reglas puede consultarse en [catan.com](https://www.catan.com/understand-catan/game-rules).
+[![Integración Continua](https://img.shields.io/github/actions/workflow/status/geuguis/CATAN-Web/tests.yml?branch=main&style=flat-square&label=TESTS_UNITARIOS&labelColor=0f172a&color=10b981)](https://github.com/geuguis/CATAN-Web/actions)
+[![Estándar](https://img.shields.io/badge/ECMASCRIPT-ES6%2B_VANILLA-f59e0b?style=flat-square&labelColor=0f172a)](./reglas.js)
+[![Dependencias](https://img.shields.io/badge/DEPENDENCIAS-0_PAQUETES-64748b?style=flat-square&labelColor=0f172a)](./package.json)
+[![Licencia](https://img.shields.io/badge/LICENCIA-MIT-334155?style=flat-square&labelColor=0f172a)](./LICENSE.txt)
 
 <p align="center">
   <a href="#como-jugar"><strong>Cómo Jugar</strong></a>
@@ -58,7 +54,7 @@
 | **Topología del Tablero** | Grafo planar generado por coordenadas axiales $(q, r)$ | 19 hexágonos, 54 nodos, 72 aristas y 9 puertos calculados en [`tablero.js`](./tablero.js) |
 | **Modalidad de Juego** | Local *Pass & Play* (3 a 4 jugadores en un mismo equipo) | Cartas cubiertas por defecto y protocolo de reordenación ante robo |
 | **Persistencia y Seguridad** | Serialización automática y sanitización de entrada | Estado en `localStorage` (`guardar`/`cargar`) y escape HTML (`escapar`) |
-| **Verificación** | Suite determinista sin navegador (*headless*) | 6 casos de prueba con `node:test` en [`tests/reglas.test.js`](./tests/reglas.test.js) |
+| **Verificación** | Suite determinista sin navegador (*headless*) | 5 casos de prueba con `node:test` en [`tests/reglas.test.js`](./tests/reglas.test.js) |
 
 ---
 
@@ -220,8 +216,7 @@ npm test
 ✔ producir respeta la regla oficial de escasez de la banca
 ✔ medir y evaluar calculan la Gran Ruta Comercial, cortes rivales y empates
 ✔ tasar exige tener poblado o ciudad en un puerto para habilitar el comercio naval
-✔ miniaturaSVG rapido coloca 6 poblados respetando siempre la Regla de la Distancia
-ℹ tests 6 | pass 6 | fail 0
+ℹ tests 5 | pass 5 | fail 0
 ```
 
 ---
@@ -231,16 +226,14 @@ npm test
 ```text
 CATAN-Web/
 ├── .github/workflows/tests.yml      # Pipeline de integración continua (GitHub Actions)
-├── fonts/                           # Tipografías locales sin dependencias externas
-│   ├── fraunces-bold.woff2          # Títulos y fichas de tablero
-│   └── source-sans.woff2            # Textos y cuerpo de interfaz
 ├── tests/reglas.test.js             # Suite de pruebas unitarias (node:test)
-├── index.html                       # Menú con isla integrada, modales y tablero SVG
-├── estilos.css                      # Paleta de juego, texturas y diseño responsive
-├── tablero.js                       # Generador topológico axial (19 hex, 54 nodos, 72 aristas, miniaturas)
+├── index.html                       # Estructura de vista, tablero SVG y modales
+├── estilos.css                      # Diseño visual, animaciones y reglas responsive
+├── tablero.js                       # Generador topológico axial (19 hex, 54 nodos, 72 aristas)
 ├── reglas.js                        # Motor puro de reglas (producción, escasez, distancia, DFS)
-├── animaciones.js                   # Sistema de trayectorias, dados y transiciones (Web Animations API)
-├── juego.js                         # Controlador de turnos, renderizado SVG y persistencia
+├── animaciones.js                   # Sistema de trayectorias y transiciones (Web Animations API)
+├── juego.js                         # Controlador de turnos, interfaz y persistencia localStorage
+├── catan_base_rules_2020.pdf        # Manual oficial de referencia
 ├── package.json                     # Definición del script de pruebas
 └── README.md                        # Documentación técnica del sistema
 ```
