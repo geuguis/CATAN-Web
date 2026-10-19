@@ -64,19 +64,19 @@ const ICONOS = {
   desarrollo: iconoSVG('desarrollo')
 };
 const COLORES = {
-  madera: '#15803d',
-  arcilla: '#c2410c',
-  lana: '#65a30d',
-  trigo: '#ca8a04',
-  mineral: '#475569',
-  desierto: '#d6b888',
-  desarrollo: '#8b5a2b'
+  madera: '#456b3c',
+  arcilla: '#a8512f',
+  lana: '#8fae4e',
+  trigo: '#d1a640',
+  mineral: '#6d7480',
+  desierto: '#d9c08f',
+  desarrollo: '#7a5432'
 };
 const JUGADORES = [
-  { id: 0, nombre: 'Jugador 1', color: '#b91c1c' },
-  { id: 1, nombre: 'Jugador 2', color: '#1d4ed8' },
-  { id: 2, nombre: 'Jugador 3', color: '#f5ebd6' },
-  { id: 3, nombre: 'Jugador 4', color: '#d97706' }
+  { id: 0, nombre: 'Jugador 1', color: '#a8322a' },
+  { id: 1, nombre: 'Jugador 2', color: '#2f5d8a' },
+  { id: 2, nombre: 'Jugador 3', color: '#ece3cf' },
+  { id: 3, nombre: 'Jugador 4', color: '#c9782b' }
 ];
 const COSTES = {
   carretera: { arcilla: 1, madera: 1 },
@@ -267,12 +267,29 @@ function generar(modo = 'azar', blanco = estado) {
   return blanco;
 }
 
-function miniaturaSVG(modo = 'azar') {
-  const mini = { ladron: 0, hexagonos: [], nodos: [], caminos: [], puertos: [] };
+function miniaturaSVG(modo = 'azar', destinoMini = null) {
+  const mini = destinoMini || { ladron: 0, hexagonos: [], nodos: [], caminos: [], puertos: [] };
   generar(modo === 'azar' ? 'azar' : 'principiante', mini);
   const radio = 52;
+  const marcoPts = [];
+  for (let i = 0; i < 6; i++) {
+    const ang = (Math.PI / 180) * (60 * i);
+    marcoPts.push(`${ (244 * Math.cos(ang)).toFixed(1) },${ (244 * Math.sin(ang)).toFixed(1) }`);
+  }
+
   let svg = `<svg class="miniatura-tablero" viewBox="-260 -235 520 470" aria-hidden="true">`;
-  svg += `<circle cx="0" cy="0" r="228" fill="#082840" stroke="#d6b888" stroke-width="6"/>`;
+  svg += `<polygon points="${ marcoPts.join(' ') }" fill="#082840" stroke="#d9c08f" stroke-width="10" stroke-linejoin="round"/>`;
+
+  if (modo === 'principiante') {
+    mini.puertos.forEach(p => {
+      const n1 = mini.nodos[p.nodos[0]];
+      const n2 = mini.nodos[p.nodos[1]];
+      const colP = p.tipo === '3:1' ? '#f5ebd6' : COLORES[p.tipo];
+      svg += `<line x1="${ p.x.toFixed(1) }" y1="${ p.y.toFixed(1) }" x2="${ n1.x.toFixed(1) }" y2="${ n1.y.toFixed(1) }" stroke="#d9c08f" stroke-width="5" stroke-linecap="round"/>`;
+      svg += `<line x1="${ p.x.toFixed(1) }" y1="${ p.y.toFixed(1) }" x2="${ n2.x.toFixed(1) }" y2="${ n2.y.toFixed(1) }" stroke="#d9c08f" stroke-width="5" stroke-linecap="round"/>`;
+      svg += `<circle cx="${ p.x.toFixed(1) }" cy="${ p.y.toFixed(1) }" r="11" fill="${ colP }" stroke="#2b1d0e" stroke-width="2.5"/>`;
+    });
+  }
 
   mini.hexagonos.forEach(h => {
     const pts = [];
@@ -280,35 +297,43 @@ function miniaturaSVG(modo = 'azar') {
       const ang = (Math.PI / 180) * (60 * i - 30);
       pts.push(`${ (h.x + radio * Math.cos(ang)).toFixed(1) },${ (h.y + radio * Math.sin(ang)).toFixed(1) }`);
     }
-    svg += `<polygon points="${ pts.join(' ') }" fill="${ COLORES[h.terreno] }" stroke="#d6b888" stroke-width="3.5"/>`;
+    svg += `<polygon points="${ pts.join(' ') }" fill="${ COLORES[h.terreno] }" stroke="#d9c08f" stroke-width="3.5"/>`;
     if (h.numero) {
-      const Destacado = h.numero === 6 || h.numero === 8;
+      const destacado = h.numero === 6 || h.numero === 8;
       svg += `<circle cx="${ h.x.toFixed(1) }" cy="${ h.y.toFixed(1) }" r="15" fill="#f5ebd6" stroke="#2b1d0e" stroke-width="2"/>`;
-      svg += `<circle cx="${ h.x.toFixed(1) }" cy="${ h.y.toFixed(1) }" r="5.5" fill="${ Destacado ? '#b91c1c' : '#2b1d0e' }"/>`;
+      svg += `<circle cx="${ h.x.toFixed(1) }" cy="${ h.y.toFixed(1) }" r="5.5" fill="${ destacado ? '#a8322a' : '#2b1d0e' }"/>`;
     }
   });
 
   if (modo === 'rapido') {
-    const muestras = [
-      { nodo: 8, color: JUGADORES[0].color },
-      { nodo: 14, color: JUGADORES[0].color },
-      { nodo: 19, color: JUGADORES[1].color },
-      { nodo: 29, color: JUGADORES[1].color },
-      { nodo: 35, color: JUGADORES[2].color },
-      { nodo: 42, color: JUGADORES[2].color }
-    ];
-    muestras.forEach(({ nodo, color }) => {
-      const n = mini.nodos[nodo];
-      if (!n) return;
-      const cid = n.caminos[0];
-      const cam = mini.caminos[cid];
-      if (cam) {
-        const n1 = mini.nodos[cam.nodos[0]];
-        const n2 = mini.nodos[cam.nodos[1]];
-        svg += `<line x1="${ n1.x }" y1="${ n1.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#2b1d0e" stroke-width="14" stroke-linecap="round"/>`;
-        svg += `<line x1="${ n1.x }" y1="${ n1.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="${ color }" stroke-width="9" stroke-linecap="round"/>`;
+    const orden = [0, 1, 2, 2, 1, 0];
+    orden.forEach(j => {
+      const libres = mini.nodos
+        .filter(n => n.dueno === null && !n.vecinos.some(vid => mini.nodos[vid].dueno !== null))
+        .map(n => n.id);
+      if (libres.length === 0) return;
+      const id = libres[Math.floor(Math.random() * libres.length)];
+      mini.nodos[id].dueno = j;
+      mini.nodos[id].edificio = 'poblado';
+      const caminosLibres = mini.nodos[id].caminos.filter(cid => mini.caminos[cid].dueno === null);
+      if (caminosLibres.length > 0) {
+        mini.caminos[caminosLibres[0]].dueno = j;
       }
-      svg += `<g transform="translate(${ n.x }, ${ n.y }) scale(1.65)">
+    });
+
+    mini.caminos.forEach(cam => {
+      if (cam.dueno === null) return;
+      const color = JUGADORES[cam.dueno].color;
+      const n1 = mini.nodos[cam.nodos[0]];
+      const n2 = mini.nodos[cam.nodos[1]];
+      svg += `<line x1="${ n1.x }" y1="${ n1.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#2b1d0e" stroke-width="14" stroke-linecap="round"/>`;
+      svg += `<line x1="${ n1.x }" y1="${ n1.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="${ color }" stroke-width="9" stroke-linecap="round"/>`;
+    });
+
+    mini.nodos.forEach(n => {
+      if (n.dueno === null) return;
+      const color = JUGADORES[n.dueno].color;
+      svg += `<g transform="translate(${ n.x }, ${ n.y }) scale(1.6)">
         <polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="${ color }" stroke="#2b1d0e" stroke-width="2.5" stroke-linejoin="round"/>
       </g>`;
     });

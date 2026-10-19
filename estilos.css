@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'CatanTitulo';
-  src: url('fonts/cinzel-bold.woff2') format('woff2');
+  src: url('fonts/fraunces-bold.woff2') format('woff2');
   font-weight: 700 900;
   font-style: normal;
   font-display: swap;
@@ -15,17 +15,17 @@
 }
 
 :root {
-  --mar: #082840;
+  --mar: #082236;
   --pergamino: #f5ebd6;
   --tinta: #2b1d0e;
-  --madera-mesa: #8b5a2b;
-  --madera: #15803d;
-  --arcilla: #c2410c;
-  --lana: #65a30d;
-  --trigo: #ca8a04;
-  --mineral: #475569;
-  --desierto: #d6b888;
-  --fuente-titulo: 'CatanTitulo', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  --madera-mesa: #7a5432;
+  --madera: #456b3c;
+  --arcilla: #a8512f;
+  --lana: #8fae4e;
+  --trigo: #d1a640;
+  --mineral: #6d7480;
+  --desierto: #d9c08f;
+  --fuente-titulo: 'CatanTitulo', Georgia, serif;
   --fuente-cuerpo: 'CatanCuerpo', 'Trebuchet MS', 'Gill Sans', sans-serif;
 }
 
@@ -37,8 +37,15 @@
   font-family: var(--fuente-cuerpo);
 }
 
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
+}
+
 body {
-  background: radial-gradient(circle at 42% 50%, #0f456b 0%, var(--mar) 70%);
+  background: radial-gradient(circle at 42% 50%, #174463 0%, var(--mar) 72%);
   color: var(--tinta);
   height: 100vh;
   width: 100vw;
@@ -123,16 +130,16 @@ body.en-menu #lienzo {
   max-width: 100%;
   max-height: 94vh;
   overflow-y: auto;
-  box-shadow: 0 18px 45px rgba(8, 40, 64, 0.75), inset 0 0 0 1px var(--desierto);
+  box-shadow: 0 18px 45px rgba(8, 34, 54, 0.78), inset 0 0 0 1px var(--desierto);
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1.05rem;
 }
 
 .tarjeta-inicio h1 {
-  font-size: 2.3rem;
-  letter-spacing: 4px;
-  color: var(--arcilla);
+  font-size: 2.35rem;
+  letter-spacing: 3px;
+  color: var(--tinta);
   text-align: center;
   border-bottom: 2px solid var(--desierto);
   padding-bottom: 0.45rem;
@@ -183,15 +190,15 @@ body.en-menu #lienzo {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  background: rgba(214, 184, 136, 0.38);
+  background: rgba(217, 192, 143, 0.38);
   border: 1.5px solid var(--desierto);
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
 }
 
 .campo-jugador:focus-within {
-  border-color: var(--arcilla);
-  background: rgba(214, 184, 136, 0.6);
+  border-color: var(--tinta);
+  background: rgba(217, 192, 143, 0.6);
 }
 
 .pieza-jugador-menu {
@@ -219,7 +226,7 @@ body.en-menu #lienzo {
 }
 
 .opcion-modo {
-  background: rgba(214, 184, 136, 0.35);
+  background: rgba(217, 192, 143, 0.35);
   border: 2px solid var(--desierto);
   border-radius: 6px;
   padding: 0.5rem 0.35rem;
@@ -251,8 +258,8 @@ body.en-menu #lienzo {
 }
 
 .opcion-modo.activo {
-  border-color: var(--arcilla);
-  background: rgba(194, 65, 12, 0.14);
+  border-color: var(--tinta);
+  background: rgba(122, 84, 50, 0.16);
 }
 
 .acciones-inicio {
@@ -272,7 +279,7 @@ body.en-menu #lienzo {
 }
 
 .boton-empezar {
-  background: var(--arcilla);
+  background: var(--madera);
   color: var(--pergamino);
   font-family: var(--fuente-titulo);
   font-size: 1.05rem;
@@ -285,26 +292,33 @@ body.en-menu #lienzo {
 }
 
 .boton-empezar:hover {
-  background: #9a3412;
+  background: #36572e;
 }
 
-.boton-comprar {
-  display: block;
-  text-align: center;
-  text-decoration: none;
-  background: var(--trigo);
-  color: var(--pergamino);
-  font-family: var(--fuente-titulo);
-  font-size: 0.95rem;
+.pie-inicio {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--desierto);
+  font-size: 0.82rem;
+}
+
+.enlace-comprar {
+  color: var(--madera-mesa);
   font-weight: 700;
-  padding: 0.7rem;
-  border-radius: 6px;
-  border: 2px solid var(--tinta);
-  letter-spacing: 0.5px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.boton-comprar:hover {
-  background: #a16207;
+.enlace-comprar:hover {
+  color: var(--tinta);
+}
+
+.nota-afiliado {
+  color: var(--madera-mesa);
+  font-size: 0.72rem;
 }
 
 /* HUD Y PANELES EN TONO PERGAMINO Y MADERA */
@@ -437,7 +451,7 @@ button.peligro {
 .paso-actual {
   font-weight: 700;
   font-size: 0.86rem;
-  color: var(--arcilla);
+  color: var(--tinta);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -461,7 +475,7 @@ button.peligro {
   border-radius: 8px;
   padding: 1rem;
   z-index: 30;
-  box-shadow: 0 14px 35px rgba(8, 40, 64, 0.65);
+  box-shadow: 0 14px 35px rgba(8, 34, 54, 0.65);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -471,7 +485,7 @@ button.peligro {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--arcilla);
+  color: var(--tinta);
   border-bottom: 1.5px solid var(--desierto);
   padding-bottom: 0.35rem;
 }
@@ -513,7 +527,7 @@ button.peligro {
 }
 
 .insignia {
-  background: rgba(214, 184, 136, 0.45);
+  background: rgba(217, 192, 143, 0.45);
   border: 1px solid var(--desierto);
   padding: 0.4rem 0.6rem;
   border-radius: 5px;
@@ -609,7 +623,7 @@ button.peligro {
 }
 
 .etiqueta-atril strong {
-  color: var(--arcilla);
+  color: var(--tinta);
   font-family: var(--fuente-titulo);
 }
 
@@ -646,8 +660,8 @@ button.peligro {
     45deg,
     var(--madera-mesa),
     var(--madera-mesa) 5px,
-    #70461e 5px,
-    #70461e 10px
+    #634224 5px,
+    #634224 10px
   );
   display: flex;
   flex-direction: column;
@@ -751,8 +765,8 @@ button.peligro {
 }
 
 .boton-accion.activo {
-  border-color: var(--arcilla);
-  background: rgba(194, 65, 12, 0.2);
+  border-color: var(--tinta);
+  background: rgba(122, 84, 50, 0.22);
 }
 
 .boton-accion.disponible:not(:disabled) {
@@ -802,6 +816,7 @@ button.peligro {
 }
 
 .dado-grande {
+  position: relative;
   width: 58px;
   height: 58px;
   border-radius: 8px;
@@ -809,15 +824,24 @@ button.peligro {
   color: var(--pergamino);
   border: 2px solid var(--tinta);
   font-weight: 900;
-  font-size: 1.8rem;
+  font-size: 1.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .dado-grande .icono-svg {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
+  opacity: 0.22;
+}
+
+.dado-grande .num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--fuente-titulo);
 }
 
 .dado-grande.rojo {
@@ -828,7 +852,7 @@ button.peligro {
 .ventana {
   position: fixed;
   inset: 0;
-  background: rgba(8, 40, 64, 0.78);
+  background: rgba(8, 34, 54, 0.78);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -850,7 +874,7 @@ button.peligro {
 }
 
 .caja-ventana h2 {
-  color: var(--arcilla);
+  color: var(--tinta);
   font-size: 1.2rem;
   border-bottom: 1.5px solid var(--desierto);
   padding-bottom: 0.35rem;

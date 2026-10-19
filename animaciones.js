@@ -26,25 +26,27 @@ function animar(tipo, datos = {}) {
     caja.className = 'dados-emergentes';
     const iconoDado = typeof iconoSVG === 'function' ? iconoSVG('dado') : '';
     caja.innerHTML = `
-      <div class="dado-grande agitando">${ iconoDado }</div>
-      <div class="dado-grande rojo agitando">${ iconoDado }</div>
+      <div class="dado-grande agitando">${ iconoDado }<span class="num">1</span></div>
+      <div class="dado-grande rojo agitando">${ iconoDado }<span class="num">1</span></div>
     `;
     capa.appendChild(caja);
     const [el1, el2] = caja.querySelectorAll('.dado-grande');
+    const n1 = el1 ? el1.querySelector('.num') : null;
+    const n2 = el2 ? el2.querySelector('.num') : null;
 
     let giros = 0;
     const int = setInterval(() => {
       giros++;
-      if (el1 && el2) {
+      if (el1 && el2 && n1 && n2) {
         if (giros < 6) {
-          el1.textContent = Math.floor(Math.random() * 6) + 1;
-          el2.textContent = Math.floor(Math.random() * 6) + 1;
+          n1.textContent = Math.floor(Math.random() * 6) + 1;
+          n2.textContent = Math.floor(Math.random() * 6) + 1;
         } else {
           clearInterval(int);
           el1.classList.remove('agitando');
           el2.classList.remove('agitando');
-          el1.textContent = datos.d1;
-          el2.textContent = datos.d2;
+          n1.textContent = datos.d1;
+          n2.textContent = datos.d2;
           setTimeout(() => {
             caja.remove();
             if (typeof datos.alTerminar === 'function') datos.alTerminar();

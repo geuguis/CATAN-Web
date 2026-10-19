@@ -909,8 +909,8 @@ function abrir(ventanaNombre) {
         <button class="primario" onclick="cerrar()">
           <span>Continuar partida</span>
         </button>
-        <button onclick="window.open('catan_base_rules_2020.pdf', '_blank')">
-          <span>Abrir reglamento oficial (PDF)</span>
+        <button onclick="window.open('https://www.catan.com/understand-catan/game-rules', '_blank', 'noopener')">
+          <span>Consultar reglamento oficial (web)</span>
         </button>
         <button class="peligro" onclick="terminar()">
           <span>Terminar partida ahora (gana quien tenga más PV)</span>
@@ -923,6 +923,7 @@ function abrir(ventanaNombre) {
   } else if (ventanaNombre === 'desempate') {
     const d = estado.desempate;
     if (!d) { cerrar(); return; }
+    const icDado = typeof iconoSVG === 'function' ? iconoSVG('dado') : '';
     caja.innerHTML = `
       <h2>Duelo de dados por desempate</h2>
       <p>Hay un empate en cabeza con <strong>${ d.maxPuntos } PV</strong>. Lanzad los dados y quien saque la suma más alta gana la partida.</p>
@@ -938,8 +939,8 @@ function abrir(ventanaNombre) {
                 <strong>${ t ? `Suma: ${ t[2] }` : 'Listo para tirar' }</strong>
               </div>
               <div class="dados-duelo">
-                <div class="dado-grande ${ d.rodando ? 'agitando' : '' }">${ t ? t[0] : '?' }</div>
-                <div class="dado-grande rojo ${ d.rodando ? 'agitando' : '' }">${ t ? t[1] : '?' }</div>
+                <div class="dado-grande ${ d.rodando ? 'agitando' : '' }">${ icDado }<span class="num">${ t ? t[0] : '?' }</span></div>
+                <div class="dado-grande rojo ${ d.rodando ? 'agitando' : '' }">${ icDado }<span class="num">${ t ? t[1] : '?' }</span></div>
               </div>
             </div>
           `;
@@ -1388,12 +1389,12 @@ function progresar(tipo, recurso) {
 
 function iconoTerrenoTableroSVG(terreno, x, y) {
   const g = {
-    madera: `<polygon points="0,-10 -7,1 -3,1 -8,8 8,8 3,1 7,1" fill="#f5ebd6"/><rect x="-1.5" y="8" width="3" height="3.5" fill="#d6b888"/>`,
+    madera: `<polygon points="0,-10 -7,1 -3,1 -8,8 8,8 3,1 7,1" fill="#f5ebd6"/><rect x="-1.5" y="8" width="3" height="3.5" fill="#d9c08f"/>`,
     arcilla: `<rect x="-9" y="-6" width="8" height="4.5" rx="0.8" fill="#f5ebd6"/><rect x="1" y="-6" width="8" height="4.5" rx="0.8" fill="#f5ebd6"/><rect x="-5" y="0" width="10" height="4.5" rx="0.8" fill="#f5ebd6"/><rect x="-9" y="6" width="7" height="3.5" rx="0.8" fill="#f5ebd6"/><rect x="0" y="6" width="9" height="3.5" rx="0.8" fill="#f5ebd6"/>`,
     lana: `<circle cx="-3.5" cy="-1" r="4" fill="#f5ebd6"/><circle cx="3.5" cy="-1" r="4" fill="#f5ebd6"/><circle cx="0" cy="-3.5" r="4" fill="#f5ebd6"/><circle cx="0" cy="2" r="4" fill="#f5ebd6"/><rect x="-4" y="5" width="2" height="4.5" rx="0.8" fill="#2b1d0e"/><rect x="2" y="5" width="2" height="4.5" rx="0.8" fill="#2b1d0e"/>`,
     trigo: `<path d="M0,-9v19M0,-5l-4,-2.5M0,-5l4,-2.5M0,0l-4.5,-2.5M0,0l4.5,-2.5M0,5l-4.5,-2.5M0,5l4.5,-2.5" stroke="#f5ebd6" stroke-width="2.2" stroke-linecap="round"/>`,
-    mineral: `<polygon points="-10,8 -3,-7 3,3 6,-2 10,8" fill="#f5ebd6"/><polygon points="-3,-7 0,-1 -5.5,-1" fill="#d6b888"/>`,
-    desierto: `<path d="M-10,6q5,-6 10,0t10,0v3h-20z" fill="#8b5a2b"/><circle cx="5" cy="-4" r="3" fill="#8b5a2b"/>`
+    mineral: `<polygon points="-10,8 -3,-7 3,3 6,-2 10,8" fill="#f5ebd6"/><polygon points="-3,-7 0,-1 -5.5,-1" fill="#d9c08f"/>`,
+    desierto: `<path d="M-10,6q5,-6 10,0t10,0v3h-20z" fill="#7a5432"/><circle cx="5" cy="-4" r="3" fill="#7a5432"/>`
   };
   return `<g transform="translate(${ x }, ${ y }) scale(0.95)" class="decoracion-hex" filter="url(#sombraFicha)">${ g[terreno] || '' }</g>`;
 }
@@ -1405,73 +1406,81 @@ function dibujar(seccion = 'todo') {
     const usarAnimacionIsla = animarAperturaIsla;
     animarAperturaIsla = false;
 
+    const marcoExterior = [];
+    const marcoInterior = [];
+    for (let i = 0; i < 6; i++) {
+      const ang = (Math.PI / 180) * (60 * i);
+      marcoExterior.push(`${ (290 * Math.cos(ang)).toFixed(1) },${ (290 * Math.sin(ang)).toFixed(1) }`);
+      marcoInterior.push(`${ (262 * Math.cos(ang)).toFixed(1) },${ (262 * Math.sin(ang)).toFixed(1) }`);
+    }
+
     let html = `
       <defs>
-        <radialGradient id="grad-mar" cx="50%" cy="50%" r="52%">
-          <stop offset="0%" stop-color="#0f456b" stop-opacity="0.7" />
-          <stop offset="72%" stop-color="#0a314d" stop-opacity="0.88" />
-          <stop offset="100%" stop-color="#082840" stop-opacity="0.96" />
+        <radialGradient id="grad-mar" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stop-color="#174463" />
+          <stop offset="72%" stop-color="#0d2e47" />
+          <stop offset="100%" stop-color="#082236" />
         </radialGradient>
 
-        <!-- Patrón Bosque: triángulos de pinos -->
-        <pattern id="pat-madera" width="24" height="24" patternUnits="userSpaceOnUse">
-          <rect width="24" height="24" fill="#15803d" />
-          <polygon points="6,3 1,13 11,13" fill="#0f5c2b" />
-          <polygon points="18,12 13,22 23,22" fill="#0f5c2b" />
-          <polygon points="18,2 14,10 22,10" fill="#1e9e4f" opacity="0.55" />
-          <polygon points="6,14 2,22 10,22" fill="#1e9e4f" opacity="0.45" />
+        <!-- Patrón Bosque: triángulos pequeños sobre #456b3c -->
+        <pattern id="pat-madera" width="22" height="22" patternUnits="userSpaceOnUse">
+          <rect width="22" height="22" fill="${ COLORES.madera }" />
+          <polygon points="6,3 2,11 10,11" fill="#2f4d28" />
+          <polygon points="16,12 12,20 20,20" fill="#2f4d28" />
+          <polygon points="16,3 13,9 19,9" fill="#5b8750" opacity="0.55" />
+          <polygon points="6,13 3,19 9,19" fill="#5b8750" opacity="0.5" />
         </pattern>
 
-        <!-- Patrón Arcilla: líneas de ladrillos y estratos -->
+        <!-- Patrón Arcilla: ladrillos y lomas sobre #a8512f -->
         <pattern id="pat-arcilla" width="24" height="16" patternUnits="userSpaceOnUse">
-          <rect width="24" height="16" fill="#c2410c" />
-          <path d="M0 8h24M0 16h24M12 0v8M24 8v8" stroke="#8c2d07" stroke-width="2" />
-          <rect x="2" y="2" width="8" height="4" fill="#dc561f" opacity="0.45" />
-          <rect x="14" y="10" width="8" height="4" fill="#dc561f" opacity="0.45" />
+          <rect width="24" height="16" fill="${ COLORES.arcilla }" />
+          <path d="M0 8h24M0 16h24M12 0v8M24 8v8" stroke="#7d381d" stroke-width="1.8" />
+          <path d="M3 5q4-3 8 0M15 13q4-3 8 0" fill="none" stroke="#c8714e" stroke-width="1.5" stroke-linecap="round" />
         </pattern>
 
-        <!-- Patrón Lana: ondulaciones y matas de pasto -->
-        <pattern id="pat-lana" width="24" height="20" patternUnits="userSpaceOnUse">
-          <rect width="24" height="20" fill="#65a30d" />
-          <path d="M2 10q5-5 10 0t10 0" fill="none" stroke="#487508" stroke-width="2" stroke-linecap="round" />
-          <path d="M6 17l-2-4M6 17l2-4M18 6l-2-4M18 6l2-4" stroke="#84cc16" stroke-width="1.8" stroke-linecap="round" />
+        <!-- Patrón Lana: puntos y copos sobre #8fae4e -->
+        <pattern id="pat-lana" width="20" height="20" patternUnits="userSpaceOnUse">
+          <rect width="20" height="20" fill="${ COLORES.lana }" />
+          <circle cx="5" cy="6" r="2.2" fill="#6d8834" />
+          <circle cx="8" cy="6" r="1.8" fill="#a9c767" />
+          <circle cx="15" cy="15" r="2.2" fill="#6d8834" />
+          <circle cx="12" cy="15" r="1.8" fill="#a9c767" />
         </pattern>
 
-        <!-- Patrón Trigo: surcos diagonales de espigas -->
-        <pattern id="pat-trigo" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
-          <rect width="16" height="16" fill="#ca8a04" />
-          <line x1="0" y1="0" x2="0" y2="16" stroke="#9a6700" stroke-width="3" />
-          <line x1="8" y1="0" x2="8" y2="16" stroke="#e3a81e" stroke-width="2" />
-          <line x1="4" y1="3" x2="7" y2="6" stroke="#f5ebd6" stroke-width="1.3" opacity="0.45" />
-          <line x1="12" y1="10" x2="15" y2="13" stroke="#f5ebd6" stroke-width="1.3" opacity="0.45" />
+        <!-- Patrón Trigo: líneas curvas de espigas sobre #d1a640 -->
+        <pattern id="pat-trigo" width="20" height="20" patternUnits="userSpaceOnUse">
+          <rect width="20" height="20" fill="${ COLORES.trigo }" />
+          <path d="M0 6q5-4 10 0t10 0M0 16q5-4 10 0t10 0" fill="none" stroke="#a67e24" stroke-width="2" />
+          <path d="M0 11q5-4 10 0t10 0" fill="none" stroke="#e5c268" stroke-width="1.4" />
         </pattern>
 
-        <!-- Patrón Mineral: picos de montaña -->
+        <!-- Patrón Mineral: picos de montaña sobre #6d7480 -->
         <pattern id="pat-mineral" width="28" height="22" patternUnits="userSpaceOnUse">
-          <rect width="28" height="22" fill="#475569" />
-          <polygon points="0,22 8,6 16,22" fill="#334155" />
-          <polygon points="8,6 12,14 5,14" fill="#94a3b8" opacity="0.45" />
-          <polygon points="12,22 20,8 28,22" fill="#2c3849" />
-          <polygon points="20,8 23,14 17,14" fill="#cbd5e1" opacity="0.35" />
+          <rect width="28" height="22" fill="${ COLORES.mineral }" />
+          <polygon points="0,22 8,6 16,22" fill="#4f5661" />
+          <polygon points="8,6 11.5,13 5,13" fill="#949ca8" opacity="0.55" />
+          <polygon points="12,22 20,8 28,22" fill="#434952" />
+          <polygon points="20,8 23,14 17,14" fill="#b5bcc7" opacity="0.45" />
         </pattern>
 
-        <!-- Patrón Desierto: dunas de arena -->
+        <!-- Patrón Desierto: ondas de arena sobre #d9c08f -->
         <pattern id="pat-desierto" width="28" height="16" patternUnits="userSpaceOnUse">
-          <rect width="28" height="16" fill="#d6b888" />
-          <path d="M0 8q7-5 14 0t14 0" fill="none" stroke="#b89560" stroke-width="2" />
-          <path d="M0 15q7-4 14 0t14 0" fill="none" stroke="#e8d3ad" stroke-width="1.5" />
+          <rect width="28" height="16" fill="${ COLORES.desierto }" />
+          <path d="M0 8q7-5 14 0t14 0" fill="none" stroke="#b59a66" stroke-width="1.8" />
+          <path d="M0 15q7-4 14 0t14 0" fill="none" stroke="#ead7b0" stroke-width="1.4" />
         </pattern>
 
         <filter id="sombraFicha" filterUnits="userSpaceOnUse" x="-400" y="-400" width="800" height="800">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5" />
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.48" />
         </filter>
         <pattern id="bloqueoRojo" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">
-          <rect width="16" height="16" fill="rgba(185, 28, 28, 0.25)" />
-          <line x1="0" y1="0" x2="0" y2="16" stroke="rgba(185, 28, 28, 0.85)" stroke-width="5" />
+          <rect width="16" height="16" fill="rgba(168, 50, 42, 0.25)" />
+          <line x1="0" y1="0" x2="0" y2="16" stroke="rgba(168, 50, 42, 0.85)" stroke-width="5" />
         </pattern>
       </defs>
-      <circle cx="0" cy="0" r="282" fill="url(#grad-mar)" stroke="#d6b888" stroke-width="4" class="decoracion-hex" />
-      <circle cx="0" cy="0" r="252" fill="none" stroke="rgba(214, 184, 136, 0.28)" stroke-width="1.8" stroke-dasharray="8 6" class="decoracion-hex" />
+      <polygon points="${ marcoExterior.join(' ') }" fill="url(#grad-mar)" stroke="#d9c08f" stroke-width="11" stroke-linejoin="round" class="decoracion-hex" />
+      <polygon points="${ marcoExterior.join(' ') }" fill="none" stroke="#2b1d0e" stroke-width="2.5" stroke-linejoin="round" class="decoracion-hex" />
+      <polygon points="${ marcoInterior.join(' ') }" fill="none" stroke="rgba(217, 192, 143, 0.35)" stroke-width="1.8" stroke-dasharray="8 6" stroke-linejoin="round" class="decoracion-hex" />
     `;
 
     const nodosActivos =
@@ -1494,25 +1503,30 @@ function dibujar(seccion = 'todo') {
       const verticesCosta = [];
       for (let i = 0; i < 6; i++) {
         const ang = (Math.PI / 180) * (60 * i - 30);
-        verticesCosta.push(`${ h.x + (radio + 7) * Math.cos(ang) },${ h.y + (radio + 7) * Math.sin(ang) }`);
+        verticesCosta.push(`${ h.x + (radio + 6.5) * Math.cos(ang) },${ h.y + (radio + 6.5) * Math.sin(ang) }`);
       }
-      html += `<polygon points="${ verticesCosta.join(' ') }" fill="#d6b888" opacity="0.38" class="decoracion-hex" />`;
+      html += `<polygon points="${ verticesCosta.join(' ') }" fill="#d9c08f" opacity="0.42" class="decoracion-hex" />`;
     });
 
     estado.puertos.forEach(p => {
       const n1 = estado.nodos[p.nodos[0]];
       const n2 = estado.nodos[p.nodos[1]];
-      const etiqueta = p.tipo === '3:1' ? '3:1' : `2:1 ${ NOMBRES[p.tipo].slice(0, 3) }`;
+      const etiqueta = p.tipo === '3:1' ? '3:1' : `2:1`;
+      const subEtiqueta = p.tipo === '3:1' ? '' : NOMBRES[p.tipo].slice(0, 3);
       const colorPuerto = p.tipo === '3:1' ? '#f5ebd6' : COLORES[p.tipo];
       const colorTextoPuerto = p.tipo === '3:1' ? '#2b1d0e' : '#f5ebd6';
       html += `
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" class="decoracion-hex" />
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#d6b888" stroke-width="1.8" stroke-dasharray="4 3" class="decoracion-hex" />
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" class="decoracion-hex" />
-        <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#d6b888" stroke-width="1.8" stroke-dasharray="4 3" class="decoracion-hex" />
-        <g transform="translate(${ p.x }, ${ p.y })" filter="url(#sombraFicha)" class="decoracion-hex">
-          <rect x="-27" y="-12" width="54" height="24" rx="6" fill="${ colorPuerto }" stroke="#2b1d0e" stroke-width="1.8" />
-          <text x="0" y="4" text-anchor="middle" fill="${ colorTextoPuerto }" font-size="10" font-weight="bold">${ etiqueta }</text>
+        <g class="decoracion-hex">
+          <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#2b1d0e" stroke-width="7" stroke-linecap="round" />
+          <line x1="${ p.x }" y1="${ p.y }" x2="${ n1.x }" y2="${ n1.y }" stroke="#c9a66b" stroke-width="4" stroke-linecap="round" />
+          <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#2b1d0e" stroke-width="7" stroke-linecap="round" />
+          <line x1="${ p.x }" y1="${ p.y }" x2="${ n2.x }" y2="${ n2.y }" stroke="#c9a66b" stroke-width="4" stroke-linecap="round" />
+          <g transform="translate(${ p.x }, ${ p.y })" filter="url(#sombraFicha)">
+            <path d="M-20,4 L20,4 L14,13 L-14,13 Z" fill="#7a5432" stroke="#2b1d0e" stroke-width="1.6" />
+            <circle cx="0" cy="-3" r="14" fill="${ colorPuerto }" stroke="#2b1d0e" stroke-width="2" />
+            <text x="0" y="${ subEtiqueta ? '-3' : '1' }" text-anchor="middle" fill="${ colorTextoPuerto }" font-size="9.5" font-weight="800">${ etiqueta }</text>
+            ${ subEtiqueta ? `<text x="0" y="6" text-anchor="middle" fill="${ colorTextoPuerto }" font-size="7.5" font-weight="700">${ subEtiqueta }</text>` : '' }
+          </g>
         </g>
       `;
     });
@@ -1544,8 +1558,8 @@ function dibujar(seccion = 'todo') {
           <g class="decoracion-hex" filter="url(#sombraFicha)">
             <circle cx="${ h.x }" cy="${ h.y + 6 }" r="16.5" fill="#f5ebd6" stroke="#2b1d0e" stroke-width="2" />
             <circle cx="${ h.x }" cy="${ h.y + 6 }" r="13.5" fill="none" stroke="rgba(43, 29, 14, 0.25)" stroke-width="1" />
-            <text x="${ h.x }" y="${ h.y + 9 }" text-anchor="middle" font-size="13.5" font-weight="900" fill="${ esRojo ? '#b91c1c' : '#2b1d0e' }">${ h.numero }</text>
-            <text x="${ h.x }" y="${ h.y + 17 }" text-anchor="middle" font-size="8.5" fill="${ esRojo ? '#b91c1c' : '#2b1d0e' }">${ '•'.repeat(puntosProb) }</text>
+            <text x="${ h.x }" y="${ h.y + 9 }" text-anchor="middle" font-family="var(--fuente-titulo)" font-size="13.5" font-weight="900" fill="${ esRojo ? '#a8322a' : '#2b1d0e' }">${ h.numero }</text>
+            <text x="${ h.x }" y="${ h.y + 17 }" text-anchor="middle" font-size="8.5" fill="${ esRojo ? '#a8322a' : '#2b1d0e' }">${ '•'.repeat(puntosProb) }</text>
           </g>
         `;
       }
@@ -1592,7 +1606,7 @@ function dibujar(seccion = 'todo') {
         if (n.edificio === 'poblado') {
           html += `
             <g transform="translate(${ n.x }, ${ n.y })" ${ accion } style="${ disponible ? 'cursor:pointer' : '' }" filter="url(#sombraFicha)">
-              <polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="${ color }" stroke="${ disponible ? '#ca8a04' : '#2b1d0e' }" stroke-width="${ disponible ? '3.5' : '2.2' }" class="${ esNueva ? 'pieza-mapa' : '' }" />
+              <polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="${ color }" stroke="${ disponible ? '#d1a640' : '#2b1d0e' }" stroke-width="${ disponible ? '3.5' : '2.2' }" class="${ esNueva ? 'pieza-mapa' : '' }" />
               <line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.5" class="decoracion-hex" />
             </g>
           `;

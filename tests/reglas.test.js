@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { JUGADORES, generar } = require('../tablero.js');
+const { JUGADORES, generar, miniaturaSVG } = require('../tablero.js');
 const {
   puntuar,
   validar,
@@ -162,4 +162,27 @@ test('tasar exige tener poblado o ciudad en un puerto para habilitar el comercio
   e.nodos[nodoEspecial].dueno = 0;
   e.nodos[nodoEspecial].edificio = 'ciudad';
   assert.equal(tasar(0, puertoEspecial.tipo, e), 2);
+});
+
+test('miniaturaSVG rapido coloca 6 poblados respetando siempre la Regla de la Distancia', () => {
+  for (let i = 0; i < 20; i++) {
+    const mini = { ladron: 0, hexagonos: [], nodos: [], caminos: [], puertos: [] };
+    const svg = miniaturaSVG('rapido', mini);
+    assert.equal(typeof svg, 'string');
+    assert.ok(svg.includes('<svg'));
+
+    const poblados = mini.nodos.filter(n => n.dueno !== null && n.edificio === 'poblado');
+    assert.equal(poblados.length, 6);
+
+    // Verificar que ningun nodo ocupado sea vecino de otro nodo ocupado
+    for (const p of poblados) {
+      for (const vecinoId of p.vecinos) {
+        assert.equal(
+          mini.nodos[vecinoId].dueno,
+          null,
+          `El nodo ${p.id} tiene un vecino ocupado ${vecinoId}`
+        );
+      }
+    }
+  }
 });

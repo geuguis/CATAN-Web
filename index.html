@@ -20,28 +20,28 @@
         <div class="entradas-jugadores">
           <div class="campo-jugador">
             <span class="pieza-jugador-menu" id="piezaMenu0" aria-hidden="true">
-              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#b91c1c" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#a8322a" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
             </span>
             <label class="etiqueta-oculta" for="nombre0">Nombre del Jugador 1</label>
             <input id="nombre0" type="text" value="Jugador 1" maxlength="16" aria-label="Nombre del Jugador 1">
           </div>
           <div class="campo-jugador">
             <span class="pieza-jugador-menu" id="piezaMenu1" aria-hidden="true">
-              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#1d4ed8" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#2f5d8a" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
             </span>
             <label class="etiqueta-oculta" for="nombre1">Nombre del Jugador 2</label>
             <input id="nombre1" type="text" value="Jugador 2" maxlength="16" aria-label="Nombre del Jugador 2">
           </div>
           <div class="campo-jugador">
             <span class="pieza-jugador-menu" id="piezaMenu2" aria-hidden="true">
-              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#f5ebd6" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#ece3cf" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
             </span>
             <label class="etiqueta-oculta" for="nombre2">Nombre del Jugador 3</label>
             <input id="nombre2" type="text" value="Jugador 3" maxlength="16" aria-label="Nombre del Jugador 3">
           </div>
           <div id="bloqueJugador3" class="campo-jugador oculto">
             <span class="pieza-jugador-menu" id="piezaMenu3" aria-hidden="true">
-              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#d97706" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
+              <svg class="pieza-svg" viewBox="-14 -15 28 28"><polygon points="0,-12 10.5,-3 10.5,9.5 -10.5,9.5 -10.5,-3" fill="#c9782b" stroke="#2b1d0e" stroke-width="2.2" stroke-linejoin="round"/><line x1="-10.5" y1="-3" x2="10.5" y2="-3" stroke="rgba(43,29,14,0.45)" stroke-width="1.6"/></svg>
             </span>
             <label class="etiqueta-oculta" for="nombre3">Nombre del Jugador 4</label>
             <input id="nombre3" type="text" value="Jugador 4" maxlength="16" aria-label="Nombre del Jugador 4">
@@ -68,14 +68,15 @@
       </div>
 
       <div class="acciones-inicio">
-        <button id="botonContinuar" class="boton-secundario oculto" onclick="alternar('inicio')">Continuar partida</button>
-        <button id="botonGuardada" class="boton-secundario oculto" onclick="cargar('restaurar')">Continuar partida</button>
+        <button id="botonContinuar" class="boton-secundario oculto" onclick="alternar('inicio')">Volver a la partida</button>
+        <button id="botonGuardada" class="boton-secundario oculto" onclick="cargar('restaurar')">Cargar partida guardada</button>
         <button class="boton-empezar" onclick="iniciar()">Nueva partida</button>
       </div>
 
-      <a href="https://amzn.eu/d/0e4hUqL1" target="_blank" rel="noopener noreferrer" class="boton-comprar">
-        Compra el Catán !
-      </a>
+      <div class="pie-inicio">
+        <a href="https://amzn.eu/d/0e4hUqL1" target="_blank" rel="noopener noreferrer" class="enlace-comprar">¡Compra Catán!</a>
+        <small class="nota-afiliado">(enlace de afiliado)</small>
+      </div>
     </aside>
   </div>
 
